@@ -2,15 +2,18 @@ package config
 
 import "github.com/caarlos0/env"
 
-var Config Environment
+var Env Environment
 
 type Environment struct {
-	Port             string `env:"HTTP_PORT" envDefault:"8000"`
-	DatabaseType     string `env:"DATABASE_TYPE" envDefault:"sqllite3"`
-	DatabaseHost     string `env:"DATABASE_HOST" envDefault:"localhost"`
-	DatabasePort     string `env:"DATABASE_PORT" envDefault:"3060"`
-	DatabaseUser     string `env:"DATABASE_USER" envDefault:"root"`
-	DatabasePassword string `env:"DATABASE_PASSWORD" envDefault:"1234"`
+	// App
+	Port      string `env:"APP_PORT" envDefault:"8000"`
+	ApiSecret string `env:"API_SECRET" envDefault:"98hbun98h"`
+	// Database
+	DBType     string `env:"DB_NAME" envDefault:"mysql"`
+	DBHost     string `env:"DB_HOST" envDefault:"127.0.0.1"`
+	DBPort     string `env:"DB_PORT" envDefault:"3306"`
+	DBUser     string `env:"DB_USER" envDefault:"root"`
+	DBPassword string `env:"DB_PASSWORD" envDefault:"1234"`
 }
 
 func init() {

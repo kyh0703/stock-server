@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kyh0703/stock-server/models"
 )
 
 type authController struct {
@@ -28,18 +29,18 @@ func (ctrl *authController) Route() *gin.RouterGroup {
 }
 
 func (ctrl *authController) register(c *gin.Context) {
-	// define body in request message
-	type request struct {
+	// validator
+	req := struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required,min=3,max=10"`
-	}
-	// validator
-	req := new(request)
+	}{}
 	if err := c.Bind(req); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	// process request
+	var user models.User
+	user.Name = req.Username
+	user.SetPassword(req.Password)
 	c.Status(http.StatusOK)
 }
 
