@@ -7,7 +7,7 @@ var Env Environment
 type Environment struct {
 	// App
 	Port      string `env:"APP_PORT" envDefault:"8000"`
-	ApiSecret string `env:"API_SECRET" envDefault:"98hbun98h"`
+	APISecret string `env:"API_SECRET" envDefault:"98hbun98h"`
 	// Database
 	DBType     string `env:"DB_NAME" envDefault:"mysql"`
 	DBHost     string `env:"DB_HOST" envDefault:"127.0.0.1"`
@@ -17,5 +17,5 @@ type Environment struct {
 }
 
 func init() {
-	env.Parse(&Config)
+	env.Parse(&Env)
 }

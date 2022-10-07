@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 
 	v1 "github.com/kyh0703/stock-server/api/controller/v1"
@@ -21,5 +19,4 @@ func NewRouter() *gin.Engine {
 func Index(router *gin.Engine) {
 	rg := router.Group("/api/v1")
 	v1.NewAuthController(rg).Route()
-	log.Println("hgihihihi")
 }

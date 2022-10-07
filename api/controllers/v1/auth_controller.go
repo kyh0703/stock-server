@@ -39,8 +39,6 @@ func (ctrl *authController) register(c *gin.Context) {
 		return
 	}
 	var user models.User
-	user.Name = req.Username
-	user.SetPassword(req.Password)
 	c.Status(http.StatusOK)
 }
 
