@@ -16,7 +16,7 @@ func NewRouter() *gin.Engine {
 	return router
 }
 
-func Index(router *gin.Engine) {
+func Routes(router *gin.Engine) {
 	rg := router.Group("/api/v1")
-	v1.NewAuthController(rg).Route()
+	v1.NewAuthController(rg).Index()
 }

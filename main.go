@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/kyh0703/stock-server/api/controller"
+	"github.com/kyh0703/stock-server/models"
 )
 
 func main() {
@@ -17,7 +18,8 @@ func main() {
 	defer stop()
 
 	router := controller.NewRouter()
-	controller.Index(router)
+	controller.Routes(router)
+	models.Connect(ctx)
 
 	srv := &http.Server{
 		Addr:    ":8000",
@@ -34,6 +36,7 @@ func main() {
 
 	// Listen for the interrupt signal.
 	<-ctx.Done()
+	models.Close()
 
 	// Restore default behavior on the interrupt signal notify user of shutdown.
 	stop()

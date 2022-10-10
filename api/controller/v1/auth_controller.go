@@ -18,7 +18,7 @@ func NewAuthController(rg *gin.RouterGroup) *authController {
 	}
 }
 
-func (ctrl *authController) Route() *gin.RouterGroup {
+func (ctrl *authController) Index() *gin.RouterGroup {
 	route := ctrl.rg.Group(ctrl.path)
 	route.POST("/register", ctrl.register)
 	route.POST("/login", ctrl.login)
