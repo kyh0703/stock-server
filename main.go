@@ -9,18 +9,38 @@ import (
 	"time"
 
 	"github.com/kyh0703/stock-server/api/controller"
-	"github.com/kyh0703/stock-server/models"
+	"github.com/kyh0703/stock-server/config"
+	_ "github.com/kyh0703/stock-server/docs"
 )
+
+// @title Swagger Example API
+// @version 1.0
+// @description This is a sample server client server
+
+// @contact.name API support
+// @contact.url http://www.swagger.io/support
+// @contact.email kyh0703@nate.com
+
+// @host localhost:8000
+// @BasePath /api/v1
 
 func main() {
 	// Create context that listens for the interrupt signal from the OS
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	router := controller.NewRouter()
-	controller.Routes(router)
-	models.Connect(ctx)
+	// init database
+	client, err := config.ConnectDatabase(ctx)
+	if err != nil {
+		log.Fatalf("failed connection database: %v", err)
+	}
+	defer client.Close()
 
+	// set routing
+	router := controller.NewRouter(client)
+	controller.SetupRouter(router)
+
+	// server configure
 	srv := &http.Server{
 		Addr:    ":8000",
 		Handler: router,
@@ -36,7 +56,6 @@ func main() {
 
 	// Listen for the interrupt signal.
 	<-ctx.Done()
-	models.Close()
 
 	// Restore default behavior on the interrupt signal notify user of shutdown.
 	stop()

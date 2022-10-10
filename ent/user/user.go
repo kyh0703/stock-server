@@ -4,17 +4,15 @@ package user
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID = "oid"
-	// FieldNickname holds the string denoting the nickname field in the database.
-	FieldNickname = "nickname"
+	FieldID = "id"
+	// FieldUsername holds the string denoting the username field in the database.
+	FieldUsername = "username"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
 	// FieldPassword holds the string denoting the password field in the database.
@@ -30,7 +28,7 @@ const (
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
-	FieldNickname,
+	FieldUsername,
 	FieldEmail,
 	FieldPassword,
 	FieldCreateAt,
@@ -48,14 +46,14 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// NicknameValidator is a validator for the "nickname" field. It is called by the builders before save.
-	NicknameValidator func(string) error
+	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	UsernameValidator func(string) error
 	// EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	EmailValidator func(string) error
 	// DefaultCreateAt holds the default value on creation for the "create_at" field.
 	DefaultCreateAt func() time.Time
 	// DefaultUpdateAt holds the default value on creation for the "update_at" field.
 	DefaultUpdateAt func() time.Time
-	// DefaultID holds the default value on creation for the "id" field.
-	DefaultID func() uuid.UUID
+	// UpdateDefaultUpdateAt holds the default value on update for the "update_at" field.
+	UpdateDefaultUpdateAt func() time.Time
 )

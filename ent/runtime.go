@@ -5,7 +5,6 @@ package ent
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/kyh0703/stock-server/ent/schema"
 	"github.com/kyh0703/stock-server/ent/user"
 )
@@ -16,24 +15,22 @@ import (
 func init() {
 	userFields := schema.User{}.Fields()
 	_ = userFields
-	// userDescNickname is the schema descriptor for nickname field.
-	userDescNickname := userFields[1].Descriptor()
-	// user.NicknameValidator is a validator for the "nickname" field. It is called by the builders before save.
-	user.NicknameValidator = userDescNickname.Validators[0].(func(string) error)
+	// userDescUsername is the schema descriptor for username field.
+	userDescUsername := userFields[0].Descriptor()
+	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
 	// userDescEmail is the schema descriptor for email field.
-	userDescEmail := userFields[2].Descriptor()
+	userDescEmail := userFields[1].Descriptor()
 	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
 	// userDescCreateAt is the schema descriptor for create_at field.
-	userDescCreateAt := userFields[4].Descriptor()
+	userDescCreateAt := userFields[3].Descriptor()
 	// user.DefaultCreateAt holds the default value on creation for the create_at field.
 	user.DefaultCreateAt = userDescCreateAt.Default.(func() time.Time)
 	// userDescUpdateAt is the schema descriptor for update_at field.
-	userDescUpdateAt := userFields[5].Descriptor()
+	userDescUpdateAt := userFields[4].Descriptor()
 	// user.DefaultUpdateAt holds the default value on creation for the update_at field.
 	user.DefaultUpdateAt = userDescUpdateAt.Default.(func() time.Time)
-	// userDescID is the schema descriptor for id field.
-	userDescID := userFields[0].Descriptor()
-	// user.DefaultID holds the default value on creation for the id field.
-	user.DefaultID = userDescID.Default.(func() uuid.UUID)
+	// user.UpdateDefaultUpdateAt holds the default value on update for the update_at field.
+	user.UpdateDefaultUpdateAt = userDescUpdateAt.UpdateDefault.(func() time.Time)
 }

@@ -28,9 +28,9 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
-// SetNickname sets the "nickname" field.
-func (uu *UserUpdate) SetNickname(s string) *UserUpdate {
-	uu.mutation.SetNickname(s)
+// SetUsername sets the "username" field.
+func (uu *UserUpdate) SetUsername(s string) *UserUpdate {
+	uu.mutation.SetUsername(s)
 	return uu
 }
 
@@ -66,14 +66,6 @@ func (uu *UserUpdate) SetUpdateAt(t time.Time) *UserUpdate {
 	return uu
 }
 
-// SetNillableUpdateAt sets the "update_at" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableUpdateAt(t *time.Time) *UserUpdate {
-	if t != nil {
-		uu.SetUpdateAt(*t)
-	}
-	return uu
-}
-
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -85,6 +77,7 @@ func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
+	uu.defaults()
 	if len(uu.hooks) == 0 {
 		if err = uu.check(); err != nil {
 			return 0, err
@@ -139,11 +132,19 @@ func (uu *UserUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (uu *UserUpdate) defaults() {
+	if _, ok := uu.mutation.UpdateAt(); !ok {
+		v := user.UpdateDefaultUpdateAt()
+		uu.mutation.SetUpdateAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (uu *UserUpdate) check() error {
-	if v, ok := uu.mutation.Nickname(); ok {
-		if err := user.NicknameValidator(v); err != nil {
-			return &ValidationError{Name: "nickname", err: fmt.Errorf(`ent: validator failed for field "User.nickname": %w`, err)}
+	if v, ok := uu.mutation.Username(); ok {
+		if err := user.UsernameValidator(v); err != nil {
+			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
 	if v, ok := uu.mutation.Email(); ok {
@@ -160,7 +161,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   user.Table,
 			Columns: user.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeInt,
 				Column: user.FieldID,
 			},
 		},
@@ -172,11 +173,11 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := uu.mutation.Nickname(); ok {
+	if value, ok := uu.mutation.Username(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldNickname,
+			Column: user.FieldUsername,
 		})
 	}
 	if value, ok := uu.mutation.Email(); ok {
@@ -226,9 +227,9 @@ type UserUpdateOne struct {
 	mutation *UserMutation
 }
 
-// SetNickname sets the "nickname" field.
-func (uuo *UserUpdateOne) SetNickname(s string) *UserUpdateOne {
-	uuo.mutation.SetNickname(s)
+// SetUsername sets the "username" field.
+func (uuo *UserUpdateOne) SetUsername(s string) *UserUpdateOne {
+	uuo.mutation.SetUsername(s)
 	return uuo
 }
 
@@ -264,14 +265,6 @@ func (uuo *UserUpdateOne) SetUpdateAt(t time.Time) *UserUpdateOne {
 	return uuo
 }
 
-// SetNillableUpdateAt sets the "update_at" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableUpdateAt(t *time.Time) *UserUpdateOne {
-	if t != nil {
-		uuo.SetUpdateAt(*t)
-	}
-	return uuo
-}
-
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -290,6 +283,7 @@ func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
 		err  error
 		node *User
 	)
+	uuo.defaults()
 	if len(uuo.hooks) == 0 {
 		if err = uuo.check(); err != nil {
 			return nil, err
@@ -350,11 +344,19 @@ func (uuo *UserUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (uuo *UserUpdateOne) defaults() {
+	if _, ok := uuo.mutation.UpdateAt(); !ok {
+		v := user.UpdateDefaultUpdateAt()
+		uuo.mutation.SetUpdateAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (uuo *UserUpdateOne) check() error {
-	if v, ok := uuo.mutation.Nickname(); ok {
-		if err := user.NicknameValidator(v); err != nil {
-			return &ValidationError{Name: "nickname", err: fmt.Errorf(`ent: validator failed for field "User.nickname": %w`, err)}
+	if v, ok := uuo.mutation.Username(); ok {
+		if err := user.UsernameValidator(v); err != nil {
+			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
 	if v, ok := uuo.mutation.Email(); ok {
@@ -371,7 +373,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Table:   user.Table,
 			Columns: user.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeInt,
 				Column: user.FieldID,
 			},
 		},
@@ -400,11 +402,11 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			}
 		}
 	}
-	if value, ok := uuo.mutation.Nickname(); ok {
+	if value, ok := uuo.mutation.Username(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldNickname,
+			Column: user.FieldUsername,
 		})
 	}
 	if value, ok := uuo.mutation.Email(); ok {

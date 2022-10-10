@@ -5,7 +5,6 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // User holds the schema definition for the User entity.
@@ -16,14 +15,11 @@ type User struct {
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New).
-			StorageKey("oid"),
-		field.String("nickname").MaxLen(255),
+		field.String("username").MaxLen(255),
 		field.String("email").MaxLen(100),
 		field.String("password"),
 		field.Time("create_at").Default(time.Now),
-		field.Time("update_at").Default(time.Now).UpdateDefault(time.Now()),
+		field.Time("update_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 

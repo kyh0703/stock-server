@@ -1,0 +1,56 @@
+basePath: /api/v1
+host: localhost:8000
+info:
+  contact:
+    email: kyh0703@nate.com
+    name: API support
+    url: http://www.swagger.io/support
+  description: This is a sample server client server
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /auth/check:
+    get:
+      description: Responds with the list of all books as JSON.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Get books array
+      tags:
+      - auth
+  /auth/login:
+    post:
+      description: Responds with the list of all books as JSON.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Get books array
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      description: Responds with the list of all books as JSON.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Get books array
+      tags:
+      - auth
+  /auth/register:
+    post:
+      description: register stock api
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: register auth info
+      tags:
+      - auth
+swagger: "2.0"

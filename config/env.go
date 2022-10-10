@@ -6,6 +6,7 @@ var Env Environment
 
 type Environment struct {
 	// App
+	Mode      string `env:"APP_MODE" envDefault:"debug"`
 	Port      string `env:"APP_PORT" envDefault:"8000"`
 	APISecret string `env:"API_SECRET" envDefault:"98hbun98h"`
 	// Database
