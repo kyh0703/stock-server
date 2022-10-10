@@ -14,6 +14,7 @@ type Environment struct {
 	DBPort     string `env:"DB_PORT" envDefault:"3306"`
 	DBUser     string `env:"DB_USER" envDefault:"root"`
 	DBPassword string `env:"DB_PASSWORD" envDefault:"1234"`
+	DBOptions  string `env:"DB_OPTION" envDefault:"1234"`
 }
 
 func init() {

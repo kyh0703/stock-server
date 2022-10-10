@@ -1,10 +1,9 @@
-package controller
+package v1
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kyh0703/stock-server/models"
 )
 
 type authController struct {
@@ -38,7 +37,6 @@ func (ctrl *authController) register(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	var user models.User
 	c.Status(http.StatusOK)
 }
 
