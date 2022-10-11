@@ -101,8 +101,10 @@ func (ctrl *authController) Login(c *gin.Context) {
 		return
 	}
 	// check exist user
-	user, err := db.User.Query().
-		Where(user.EmailContains(req.Email)).
+	user, err := db.User.
+		Query().
+		Where(
+			user.EmailContains(req.Email)).
 		Only(c)
 	if err != nil {
 		c.AbortWithError(http.StatusUnauthorized, err)
@@ -115,7 +117,7 @@ func (ctrl *authController) Login(c *gin.Context) {
 		return
 	}
 	// access token
-	accessToken, err := auth.GenerateToken(req.Email)
+	accessToken, err := auth.GenerateToken(user.ID, user.Email)
 	if err != nil {
 		c.AbortWithError(http.StatusUnauthorized, err)
 		return

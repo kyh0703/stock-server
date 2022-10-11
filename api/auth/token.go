@@ -2,7 +2,6 @@ package auth
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -13,37 +12,23 @@ import (
 	"github.com/kyh0703/stock-server/config"
 )
 
-func GenerateToken(id string) (string, error) {
+func GenerateToken(id int, email string) (string, error) {
 	claim := jwt.MapClaims{}
 	claim["authorized"] = true
 	claim["user_id"] = id
+	claim["email"] = email
 	claim["exp"] = time.Now().Add(config.Env.APITokenLife).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	return token.SignedString([]byte(config.Env.APISecret))
 }
 
-func ValidateTokenFromCookie(c *gin.Context) error {
-	cookieToken, err := c.Request.Cookie("access-token")
-	if err != nil {
-		return err
-	}
-	tokenString := cookieToken.Value
-	if tokenString == "" {
-		return err
-	}
+func ValidateTokenFromCookie(accessToken string) error {
 	claims := jwt.MapClaims{}
-	token, err := jwt.ParseWithClaims(tokenString, &claims,
+	_, err := jwt.ParseWithClaims(accessToken, &claims,
 		func(token *jwt.Token) (interface{}, error) {
 			return []byte(config.Env.APISecret), nil
 		})
-	if err != nil {
-		return err
-	}
-	log.Printf("token: %v\n", token)
-	for k, v := range claims {
-		log.Printf("key: %v, value: %v\n", k, v)
-	}
-	return nil
+	return err
 }
 
 func ValidateToken(c *gin.Context) error {

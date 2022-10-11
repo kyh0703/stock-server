@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -15,8 +16,8 @@ type User struct {
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("email").MaxLen(100).Unique(),
 		field.String("username").MaxLen(255),
-		field.String("email").MaxLen(100),
 		field.String("password"),
 		field.Time("create_at").Default(time.Now),
 		field.Time("update_at").Default(time.Now).UpdateDefault(time.Now),
@@ -25,5 +26,7 @@ func (User) Fields() []ent.Field {
 
 // Edges of the User.
 func (User) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("posts", Post.Type),
+	}
 }

@@ -27,5 +27,8 @@ func NewRouter(client *ent.Client) *gin.Engine {
 func SetupRouter(router *gin.Engine) {
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	rg := router.Group("/api/v1")
-	v1.NewAuthController(rg).Index()
+	{
+		v1.NewAuthController(rg).Index()
+		v1.NewPostController(rg).Index()
+	}
 }
