@@ -19,10 +19,14 @@ func SetJSON() gin.HandlerFunc {
 
 func SetAuthentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := auth.ValidateToken(c); err != nil {
-			c.AbortWithError(http.StatusUnauthorized, errors.New(("Unauthorized")))
+		if err := auth.ValidateTokenFromCookie(c); err != nil {
+			c.AbortWithError(http.StatusUnauthorized, errors.New("Unauthorized"))
 			return
 		}
+		// if err := auth.ValidateToken(c); err != nil {
+		// 	c.AbortWithError(http.StatusUnauthorized, errors.New(("Unauthorized")))
+		// 	return
+		// }
 		c.Next()
 	}
 }

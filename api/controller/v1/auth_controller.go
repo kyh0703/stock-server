@@ -44,9 +44,9 @@ func (ctrl *authController) Register(c *gin.Context) {
 	db, _ := c.Keys["database"].(*ent.Client)
 	// validator
 	req := struct {
-		Username string `json:"username" binding:"required"`
-		Password string `json:"password" binding:"required,min=3,max=10"`
 		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required,min=3,max=10"`
+		Username string `json:"username" binding:"required"`
 	}{}
 	if err := c.Bind(&req); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
@@ -108,6 +108,7 @@ func (ctrl *authController) Login(c *gin.Context) {
 		c.AbortWithError(http.StatusUnauthorized, err)
 		return
 	}
+	// verify password
 	ok, err := util.CompareHashPassword(user.Password, req.Password)
 	if err != nil || !ok {
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -116,13 +117,14 @@ func (ctrl *authController) Login(c *gin.Context) {
 	// access token
 	accessToken, err := auth.GenerateToken(req.Email)
 	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+		c.AbortWithError(http.StatusUnauthorized, err)
 		return
 	}
 	// set cookie
-	c.SetCookie("access-token", accessToken, 60*60*24, "/", "localhost:8000", false, true)
+	c.SetCookie("access-token", accessToken, 60*60*24*7, "/", "localhost:8000", false, true)
+	// TODO (refreshed token) 추후 작업 예정입니다.
 	c.JSON(http.StatusOK, gin.H{
-		"status":      http.StatusOK,
+		"status":      200,
 		"message":     "토큰 발급 완료",
 		"accessToken": accessToken,
 	})
@@ -147,5 +149,6 @@ func (ctrl *authController) Check(c *gin.Context) {
 // @Success     200
 // @Router      /auth/logout [post]
 func (ctrl *authController) Logout(c *gin.Context) {
-	c.Status(http.StatusOK)
+	c.SetCookie("access-token", "", 0, "/", "", false, true)
+	c.Status(http.StatusNoContent)
 }

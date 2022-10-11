@@ -12,8 +12,8 @@ type Environment struct {
 	// App
 	Mode         string        `env:"APP_MODE" envDefault:"debug"`
 	Port         string        `env:"APP_PORT" envDefault:"8000"`
-	APISecret    string        `env:"API_SECRET" envDefault:"98hbun98h"`
-	APITokenLife time.Duration `env:"API_SECRET_LIFE" envDefault:"15m"`
+	APISecret    string        `env:"API_SECRET" envDefault:"secret"`
+	APITokenLife time.Duration `env:"API_SECRET_LIFE" envDefault:"1h"`
 	// Database
 	DBType     string `env:"DB_NAME" envDefault:"mysql"`
 	DBHost     string `env:"DB_HOST" envDefault:"127.0.0.1"`

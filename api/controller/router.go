@@ -17,10 +17,8 @@ func NewRouter(client *ent.Client) *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(middleware.SetDatabase(client))
 	router.Use(middleware.SetJSON())
-	switch config.Env.Mode {
-	case "debug":
-		gin.SetMode(gin.DebugMode)
-	case "release":
+	router.Use(middleware.SetAuthentication())
+	if config.Env.Mode == gin.ReleaseMode {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	return router
