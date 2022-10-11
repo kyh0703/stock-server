@@ -3,14 +3,16 @@ package config
 import (
 	"context"
 
+	"entgo.io/ent/dialect"
 	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/migrate"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func ConnectDatabase(ctx context.Context) (*ent.Client, error) {
-	client, err := ent.Open("mysql", "root:1234@tcp(localhost:3306)/mydb?parseTime=true")
+	client, err := ent.Open(dialect.SQLite, "file:stock.db?_fk=1")
 	if err != nil {
 		return nil, err
 	}

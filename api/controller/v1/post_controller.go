@@ -37,17 +37,17 @@ func (ctrl *postController) Index() *gin.RouterGroup {
 // @Success     200
 // @Router      /auth/register [post]
 func (ctrl *postController) List(c *gin.Context) {
-	db, _ := c.Keys["database"].(*ent.Client)
+	// db, _ := c.Keys["database"].(*ent.Client)
 	// pagination
-	var (
-		page  = c.DefaultQuery("page", "1")
-		tag   = c.Query("tag")
-		email = c.Query("email")
-	)
-	db.Post.Query().
-		Where(Post.Or(
-			Post.Has
-		))
+	// var (
+	// 	page  = c.DefaultQuery("page", "1")
+	// 	tag   = c.Query("tag")
+	// 	email = c.Query("email")
+	// )
+	// db.Post.Query().
+	// 	Where(post.Or(
+	// 		post.tagoo
+	// 	))
 }
 
 // Register     godoc
