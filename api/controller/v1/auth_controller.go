@@ -4,7 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kyh0703/stock-server/api/auth"
 	"github.com/kyh0703/stock-server/ent"
+	"github.com/kyh0703/stock-server/ent/user"
+	"github.com/kyh0703/stock-server/util"
 )
 
 type authController struct {
@@ -43,17 +46,36 @@ func (ctrl *authController) Register(c *gin.Context) {
 	req := struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required,min=3,max=10"`
+		Email    string `json:"email" binding:"required"`
 	}{}
-	if err := c.Bind(req); err != nil {
+	if err := c.Bind(&req); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	// register
+	// hash password
+	hashPassword, err := util.HashPassword(req.Password)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	// check the exist user
+	exist, err := db.User.Query().
+		Where(
+			user.EmailContains(req.Email),
+		).Exist(c)
+	if err != nil || exist {
+		c.AbortWithStatus(http.StatusConflict)
+		return
+	}
+	// register in database
 	user, err := db.User.Create().
 		SetUsername(req.Username).
-		Save(c.Request.Context())
+		SetPassword(hashPassword).
+		SetEmail(req.Email).
+		Save(c)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 	c.JSON(http.StatusOK, user)
 }
@@ -63,10 +85,47 @@ func (ctrl *authController) Register(c *gin.Context) {
 // @Description Responds with the list of all books as JSON.
 // @Tags        auth
 // @Produce     json
+// @Param       username string
+// @Param       password string
 // @Success     200
 // @Router      /auth/login [post]
 func (ctrl *authController) Login(c *gin.Context) {
-	c.Status(http.StatusOK)
+	db, _ := c.Keys["database"].(*ent.Client)
+	// validator
+	req := struct {
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required,min=3,max=10"`
+	}{}
+	if err := c.Bind(&req); err != nil {
+		c.AbortWithError(http.StatusUnauthorized, err)
+		return
+	}
+	// check exist user
+	user, err := db.User.Query().
+		Where(user.EmailContains(req.Email)).
+		Only(c)
+	if err != nil {
+		c.AbortWithError(http.StatusUnauthorized, err)
+		return
+	}
+	ok, err := util.CompareHashPassword(user.Password, req.Password)
+	if err != nil || !ok {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	// access token
+	accessToken, err := auth.GenerateToken(req.Email)
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	// set cookie
+	c.SetCookie("access-token", accessToken, 60*60*24, "/", "localhost:8000", false, true)
+	c.JSON(http.StatusOK, gin.H{
+		"status":      http.StatusOK,
+		"message":     "토큰 발급 완료",
+		"accessToken": accessToken,
+	})
 }
 
 // Check        godoc

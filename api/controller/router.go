@@ -12,14 +12,11 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-type Controller interface {
-	Route()
-}
-
 func NewRouter(client *ent.Client) *gin.Engine {
 	router := gin.Default()
 	router.Use(gin.Logger())
 	router.Use(middleware.SetDatabase(client))
+	router.Use(middleware.SetJSON())
 	switch config.Env.Mode {
 	case "debug":
 		gin.SetMode(gin.DebugMode)

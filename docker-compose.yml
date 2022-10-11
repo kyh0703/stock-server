@@ -1,13 +1,14 @@
 version: '3.1'
 
 services:
-  postgres:
-    container_name: postgres
-    image: postgres:latest
+  mysql:
+    container_name: mysql
+    image: mysql:5.7
+    restart: always
     ports:
-      - 5432:5432
+      - 3306:3306
     volumes:
-      - ./.data/postgres:/var/lib/postgresql/data
+      - ./data/mysql:/var/lib/mysql
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: mydb

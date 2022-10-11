@@ -7,24 +7,23 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kyh0703/stock-server/api/auth"
-	"github.com/kyh0703/stock-server/api/responses"
 	"github.com/kyh0703/stock-server/ent"
 )
 
-func SetJSON(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		next(w, r)
+func SetJSON() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Type", "application/json")
+		c.Next()
 	}
 }
 
-func SetAuthentication(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := auth.ValidToken(r); err != nil {
-			responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))
+func SetAuthentication() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if err := auth.ValidateToken(c); err != nil {
+			c.AbortWithError(http.StatusUnauthorized, errors.New(("Unauthorized")))
 			return
 		}
-		next(w, r)
+		c.Next()
 	}
 }
 

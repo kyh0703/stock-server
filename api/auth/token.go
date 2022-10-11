@@ -11,19 +11,24 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"github.com/kyh0703/stock-server/config"
 )
 
-func CreateToken(userId uint32) (string, error) {
-	claims := jwt.MapClaims{}
-	claims["authorized"] = true
-	claims["user_id"] = userId
-	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+func GenerateToken(id string) (string, error) {
+	claim := jwt.MapClaims{}
+	claim["authorized"] = true
+	claim["user_id"] = id
+	claim["exp"] = time.Now().Add(config.Env.APITokenLife).Unix()
+	token := jwt.NewWithClaims(jwt.SigningMethodES256, claim)
 	return token.SignedString([]byte(config.Env.APISecret))
 }
 
-func ValidToken(r *http.Request) error {
+func ValidateToken(c *gin.Context) error {
+	return nil
+}
+
+func TokenValid(r *http.Request) error {
 	tokenString := ExtractToken(r)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -51,8 +56,8 @@ func ExtractToken(r *http.Request) string {
 	}
 	return ""
 }
-func ExtractTokenID(r *http.Request) (uint32, error) {
 
+func ExtractTokenID(r *http.Request) (uint32, error) {
 	tokenString := ExtractToken(r)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -74,7 +79,7 @@ func ExtractTokenID(r *http.Request) (uint32, error) {
 	return 0, nil
 }
 
-//Pretty display the claims licely in the terminal
+// Pretty display the claims licely in the terminal
 func Pretty(data interface{}) {
 	b, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
