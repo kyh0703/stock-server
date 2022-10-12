@@ -22,13 +22,13 @@ func GenerateToken(id int, email string) (string, error) {
 	return token.SignedString([]byte(config.Env.APISecret))
 }
 
-func ValidateTokenFromCookie(accessToken string) error {
+func ValidateTokenFromCookie(accessToken string) (jwt.MapClaims, error) {
 	claims := jwt.MapClaims{}
 	_, err := jwt.ParseWithClaims(accessToken, &claims,
 		func(token *jwt.Token) (interface{}, error) {
 			return []byte(config.Env.APISecret), nil
 		})
-	return err
+	return claims, err
 }
 
 func ValidateToken(c *gin.Context) error {

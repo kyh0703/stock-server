@@ -7,7 +7,7 @@ import (
 	"github.com/kyh0703/stock-server/api/auth"
 	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/user"
-	"github.com/kyh0703/stock-server/util"
+	"github.com/kyh0703/stock-server/lib"
 )
 
 type authController struct {
@@ -53,7 +53,7 @@ func (ctrl *authController) Register(c *gin.Context) {
 		return
 	}
 	// hash password
-	hashPassword, err := util.HashPassword(req.Password)
+	hashPassword, err := lib.HashPassword(req.Password)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -79,7 +79,18 @@ func (ctrl *authController) Register(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	// access token
+	accessToken, err := auth.GenerateToken(user.ID, user.Email)
+	if err != nil {
+		c.AbortWithError(http.StatusUnauthorized, err)
+		return
+	}
+	c.SetCookie("access-token", accessToken, 60*60*24*7, "/", "localhost:8000", false, true)
+	c.JSON(http.StatusOK, gin.H{
+		"status":      200,
+		"message":     "회원가입 완료",
+		"accessToken": accessToken,
+	})
 }
 
 // Login        godoc
@@ -113,7 +124,7 @@ func (ctrl *authController) Login(c *gin.Context) {
 		return
 	}
 	// verify password
-	ok, err := util.CompareHashPassword(user.Password, req.Password)
+	ok, err := lib.CompareHashPassword(user.Password, req.Password)
 	if err != nil || !ok {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
@@ -142,6 +153,11 @@ func (ctrl *authController) Login(c *gin.Context) {
 // @Success     200
 // @Router      /auth/check [get]
 func (ctrl *authController) Check(c *gin.Context) {
+	userID := c.Request.Header.Get("x-request-id")
+	if userID == "" {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 	c.Status(http.StatusOK)
 }
 

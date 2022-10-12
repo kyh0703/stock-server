@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -24,10 +25,13 @@ func SetAuthentication() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		if err := auth.ValidateTokenFromCookie(accessToken); err != nil {
+		decode, err := auth.ValidateTokenFromCookie(accessToken)
+		if err != nil {
 			c.AbortWithError(http.StatusUnauthorized, errors.New("Unauthorized"))
 			return
 		}
+		c.Request.Header.Set("x-request-id", fmt.Sprintf("%v", decode["user_id"]))
+		// TODO 남은 유효기간 재발급 처리
 		// if err := auth.ValidateToken(c); err != nil {
 		// 	c.AbortWithError(http.StatusUnauthorized, errors.New(("Unauthorized")))
 		// 	return
