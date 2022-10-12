@@ -17,7 +17,7 @@ func GenerateToken(id int, email string) (string, error) {
 	claim["authorized"] = true
 	claim["user_id"] = id
 	claim["email"] = email
-	claim["exp"] = time.Now().Add(config.Env.APITokenLife).Unix()
+	claim["exp"] = time.Now().Add(config.Env.APISecretLifeTime).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	return token.SignedString([]byte(config.Env.APISecret))
 }
