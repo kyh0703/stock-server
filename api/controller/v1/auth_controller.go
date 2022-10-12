@@ -59,7 +59,8 @@ func (ctrl *authController) Register(c *gin.Context) {
 		return
 	}
 	// check the exist user
-	exist, err := db.User.Query().
+	exist, err := db.User.
+		Query().
 		Where(
 			user.EmailContains(req.Email),
 		).Exist(c)
@@ -68,7 +69,8 @@ func (ctrl *authController) Register(c *gin.Context) {
 		return
 	}
 	// register in database
-	user, err := db.User.Create().
+	user, err := db.User.
+		Create().
 		SetUsername(req.Username).
 		SetPassword(hashPassword).
 		SetEmail(req.Email).
