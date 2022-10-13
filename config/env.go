@@ -2,7 +2,6 @@ package config
 
 import (
 	"log"
-	"time"
 
 	"github.com/caarlos0/env"
 	"github.com/joho/godotenv"
@@ -15,7 +14,6 @@ type Environment struct {
 	Mode              string        `env:"GIN_MODE" envDefault:"debug"`
 	Port              string        `env:"APP_PORT" envDefault:"8000"`
 	APISecret         string        `env:"API_SECRET" envDefault:"secret"`
-	APISecretLifeTime time.Duration `env:"API_SECRET_LIFETIME" envDefault:"1h"`
 	// Database
 	DBType     string `env:"DB_NAME" envDefault:"mysql"`
 	DBHost     string `env:"DB_HOST" envDefault:"127.0.0.1"`
@@ -33,7 +31,6 @@ func init() {
 	log.Println("GIN_MODE            = ", Env.Mode)
 	log.Println("APP_PORT            = ", Env.Port)
 	log.Println("APP_SECRET          = ", Env.APISecret)
-	log.Println("APP_SECRET_LIFETIME = ", Env.APISecretLifeTime)
 	log.Println("-----------------------------------")
 	log.Println("[DATABASE]")
 	log.Println("DB_NAME             = ", Env.DBType)

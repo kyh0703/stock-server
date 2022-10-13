@@ -7,8 +7,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kyh0703/stock-server/api/auth"
 	"github.com/kyh0703/stock-server/ent"
+	"github.com/kyh0703/stock-server/lib/jwt"
 )
 
 func SetJSON() gin.HandlerFunc {
@@ -25,7 +25,7 @@ func SetAuthentication() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		decode, err := auth.ValidateTokenFromCookie(accessToken)
+		decode, err := jwt.ValidateTokenFromCookie(accessToken)
 		if err != nil {
 			c.AbortWithError(http.StatusUnauthorized, errors.New("Unauthorized"))
 			return

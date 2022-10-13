@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kyh0703/stock-server/api/auth"
 	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/user"
-	"github.com/kyh0703/stock-server/lib"
+	"github.com/kyh0703/stock-server/lib/jwt"
+	"github.com/kyh0703/stock-server/lib/password"
 )
 
 type authController struct {
@@ -53,7 +53,7 @@ func (ctrl *authController) Register(c *gin.Context) {
 		return
 	}
 	// hash password
-	hashPassword, err := lib.HashPassword(req.Password)
+	hashPassword, err := password.HashPassword(req.Password)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -80,16 +80,24 @@ func (ctrl *authController) Register(c *gin.Context) {
 		return
 	}
 	// access token
-	accessToken, err := auth.GenerateToken(user.ID, user.Email)
+	accessToken, err := jwt.CreateAccessToken(user.ID)
 	if err != nil {
 		c.AbortWithError(http.StatusUnauthorized, err)
 		return
 	}
+	// refresh token
+	refreshToken, err := jwt.CreateRefreshToken(user.ID)
+	if err != nil {
+		c.AbortWithError(http.StatusUnauthorized, err)
+		return
+	}
+	// success
 	c.SetCookie("access-token", accessToken, 60*60*24*7, "/", "localhost:8000", false, true)
 	c.JSON(http.StatusOK, gin.H{
-		"status":      200,
-		"message":     "회원가입 완료",
-		"accessToken": accessToken,
+		"status":       200,
+		"message":      "회원가입 완료",
+		"accessToken":  accessToken,
+		"refreshToken": refreshToken,
 	})
 }
 
@@ -124,24 +132,30 @@ func (ctrl *authController) Login(c *gin.Context) {
 		return
 	}
 	// verify password
-	ok, err := lib.CompareHashPassword(user.Password, req.Password)
+	ok, err := password.CompareHashPassword(user.Password, req.Password)
 	if err != nil || !ok {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 	// access token
-	accessToken, err := auth.GenerateToken(user.ID, user.Email)
+	accessToken, err := jwt.CreateAccessToken(user.ID)
+	if err != nil {
+		c.AbortWithError(http.StatusUnauthorized, err)
+		return
+	}
+	// refresh token
+	refreshToken, err := jwt.CreateRefreshToken(user.ID)
 	if err != nil {
 		c.AbortWithError(http.StatusUnauthorized, err)
 		return
 	}
 	// set cookie
 	c.SetCookie("access-token", accessToken, 60*60*24*7, "/", "localhost:8000", false, true)
-	// TODO (refreshed token) 추후 작업 예정입니다.
 	c.JSON(http.StatusOK, gin.H{
-		"status":      200,
-		"message":     "토큰 발급 완료",
-		"accessToken": accessToken,
+		"status":       200,
+		"message":      "토큰 발급 완료",
+		"accessToken":  accessToken,
+		"refreshToken": refreshToken,
 	})
 }
 

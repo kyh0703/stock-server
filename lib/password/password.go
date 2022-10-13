@@ -1,4 +1,4 @@
-package lib
+package password
 
 import (
 	"fmt"

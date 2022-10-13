@@ -8,11 +8,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
 	"github.com/gin-gonic/gin"
-	"github.com/kyh0703/stock-server/api/middleware"
 	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/post"
 	"github.com/kyh0703/stock-server/ent/predicate"
 	"github.com/kyh0703/stock-server/ent/user"
+	"github.com/kyh0703/stock-server/middleware"
 )
 
 type postController struct {

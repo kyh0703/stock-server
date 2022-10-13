@@ -1,4 +1,4 @@
-package auth
+package jwt
 
 import (
 	"fmt"
@@ -9,17 +9,45 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/kyh0703/stock-server/config"
 )
 
-func GenerateToken(id int, email string) (string, error) {
-	claim := jwt.MapClaims{}
-	claim["authorized"] = true
-	claim["user_id"] = id
-	claim["email"] = email
-	claim["exp"] = time.Now().Add(config.Env.APISecretLifeTime).Unix()
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+type TokenInfo struct {
+	AccessToken         string
+	AccessUUID          string
+	AccessTokenExpires  int64
+	RefreshUUID         string
+	RefreshToken        string
+	RefreshTokenExpires int64
+}
+
+func generateToken(id int, expire int64) (string, error) {
+	claims := jwt.MapClaims{}
+	claims["authorized"] = true
+	claims["user_id"] = id
+	claims["exp"] = expire
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(config.Env.APISecret))
+}
+
+func CreateToken(userID int) (*TokenInfo, error) {
+	t := new(TokenInfo)
+	t.AccessTokenExpires = time.Now().Add(time.Minute * 15).Unix()
+	t.AccessUUID = uuid.NewString()
+	accessToken, err := generateToken(userID, t.AccessTokenExpires)
+	if err != nil {
+		return nil, err
+	}
+	t.AccessToken = accessToken
+	t.RefreshTokenExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+	t.RefreshUUID = uuid.NewString()
+	refreshToken, err := generateToken(userID, t.RefreshTokenExpires)
+	if err != nil {
+		return nil, err
+	}
+	t.RefreshToken = refreshToken
+	return t, nil
 }
 
 func ValidateTokenFromCookie(accessToken string) (jwt.MapClaims, error) {
