@@ -100,7 +100,7 @@ func ValidateTokenFromCookie(accessToken string) (jwt.MapClaims, error) {
 	return claims, err
 }
 
-func VerifyToken(c *gin.Context) (*jwt.Token, error) {
+func GetToken(c *gin.Context) (*jwt.Token, error) {
 	tokenString := ExtractToken(c)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -115,7 +115,7 @@ func VerifyToken(c *gin.Context) (*jwt.Token, error) {
 }
 
 func ValidateToken(c *gin.Context) error {
-	token, err := VerifyToken(c)
+	token, err := GetToken(c)
 	if err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func ExtractToken(c *gin.Context) string {
 }
 
 func ExtractTokenMetadata(c *gin.Context) (*AccessData, error) {
-	token, err := VerifyToken(c)
+	token, err := GetToken(c)
 	if err != nil {
 		return nil, err
 	}
