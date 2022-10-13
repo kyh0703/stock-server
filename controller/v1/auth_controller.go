@@ -164,17 +164,17 @@ func (ctrl *authController) Check(c *gin.Context) {
 // @Router      /auth/logout [post]
 func (ctrl *authController) Logout(c *gin.Context) {
 	rc, _ := c.Keys["redis"].(*redis.Client)
-	// delete token data
+	// get token metadata
 	au, err := jwt.ExtractTokenMetadata(c)
 	if err != nil {
 		c.AbortWithError(http.StatusUnauthorized, err)
 		return
 	}
+	// delete token data
 	deleted, err := jwt.DeleteTokenData(rc, au.AccessUUID)
 	if err != nil || deleted == 0 {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	c.SetCookie("access-token", "", 0, "/", "", false, true)
 	c.Status(http.StatusNoContent)
 }
