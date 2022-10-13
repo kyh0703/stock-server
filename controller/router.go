@@ -2,20 +2,21 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 
-	v1 "github.com/kyh0703/stock-server/api/controller/v1"
-	"github.com/kyh0703/stock-server/api/middleware"
+	v1 "github.com/kyh0703/stock-server/controller/v1"
 	"github.com/kyh0703/stock-server/ent"
+	"github.com/kyh0703/stock-server/middleware"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func NewRouter(client *ent.Client) *gin.Engine {
+func NewRouter(ec *ent.Client, rc *redis.Client) *gin.Engine {
 	router := gin.Default()
-	router.Use(middleware.SetDatabase(client))
+	router.Use(middleware.SetDatabase(ec))
+	router.Use(middleware.SetRedis(rc))
 	router.Use(middleware.SetJSON())
-	router.Use(middleware.SetAuthentication())
 	return router
 }
 

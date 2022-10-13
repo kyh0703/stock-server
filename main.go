@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kyh0703/stock-server/api/controller"
 	"github.com/kyh0703/stock-server/config"
+	"github.com/kyh0703/stock-server/controller"
 	_ "github.com/kyh0703/stock-server/docs"
 )
 
@@ -29,17 +29,23 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	// init database
-	client, err := config.ConnectDatabase(ctx)
+	// init ent client
+	ec, err := config.ConnectDatabase(ctx)
 	if err != nil {
 		log.Fatalf("failed connection database: %v", err)
 	}
-	defer client.Close()
+	defer ec.Close()
+
+	// init redis client
+	rc, err := config.ConnectRedis()
+	if err != nil {
+		log.Fatalf("failed connection redis: %v", err)
+	}
+	defer rc.Close()
 
 	// set routing
-	router := controller.NewRouter(client)
+	router := controller.NewRouter(ec, rc)
 	controller.SetupRouter(router)
-
 	// server configure
 	srv := &http.Server{
 		Addr:    ":8000",

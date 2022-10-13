@@ -1,13 +1,16 @@
 package v1
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/user"
 	"github.com/kyh0703/stock-server/lib/jwt"
 	"github.com/kyh0703/stock-server/lib/password"
+	"github.com/kyh0703/stock-server/middleware"
 )
 
 type authController struct {
@@ -26,8 +29,8 @@ func (ctrl *authController) Index() *gin.RouterGroup {
 	route := ctrl.rg.Group(ctrl.path)
 	route.POST("/register", ctrl.Register)
 	route.POST("/login", ctrl.Login)
-	route.GET("/check", ctrl.Check)
-	route.POST("/logout", ctrl.Logout)
+	route.GET("/check", middleware.TokenAuth(), ctrl.Check)
+	route.POST("/logout", middleware.TokenAuth(), ctrl.Logout)
 	return route
 }
 
@@ -44,12 +47,18 @@ func (ctrl *authController) Register(c *gin.Context) {
 	db, _ := c.Keys["database"].(*ent.Client)
 	// validator
 	req := struct {
-		Email    string `json:"email" binding:"required"`
-		Password string `json:"password" binding:"required,min=3,max=10"`
-		Username string `json:"username" binding:"required"`
+		Email           string `json:"email" binding:"required"`
+		Password        string `json:"password" binding:"required,min=3,max=10"`
+		PasswordConfirm string `json:"passwordConfirm" binding:"required,min=3,max=10"`
+		Username        string `json:"username" binding:"required"`
 	}{}
-	if err := c.Bind(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	// compare "Password" to "PasswordConfirm"
+	if req.Password != req.PasswordConfirm {
+		c.AbortWithError(http.StatusBadRequest, errors.New("confirm password"))
 		return
 	}
 	// hash password
@@ -61,15 +70,14 @@ func (ctrl *authController) Register(c *gin.Context) {
 	// check the exist user
 	exist, err := db.User.
 		Query().
-		Where(
-			user.EmailContains(req.Email),
-		).Exist(c)
+		Where(user.EmailContains(req.Email)).
+		Exist(c)
 	if err != nil || exist {
 		c.AbortWithStatus(http.StatusConflict)
 		return
 	}
 	// register in database
-	user, err := db.User.
+	_, err = db.User.
 		Create().
 		SetUsername(req.Username).
 		SetPassword(hashPassword).
@@ -79,26 +87,7 @@ func (ctrl *authController) Register(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	// access token
-	accessToken, err := jwt.CreateAccessToken(user.ID)
-	if err != nil {
-		c.AbortWithError(http.StatusUnauthorized, err)
-		return
-	}
-	// refresh token
-	refreshToken, err := jwt.CreateRefreshToken(user.ID)
-	if err != nil {
-		c.AbortWithError(http.StatusUnauthorized, err)
-		return
-	}
-	// success
-	c.SetCookie("access-token", accessToken, 60*60*24*7, "/", "localhost:8000", false, true)
-	c.JSON(http.StatusOK, gin.H{
-		"status":       200,
-		"message":      "회원가입 완료",
-		"accessToken":  accessToken,
-		"refreshToken": refreshToken,
-	})
+	c.Status(http.StatusOK)
 }
 
 // Login        godoc
@@ -112,20 +101,20 @@ func (ctrl *authController) Register(c *gin.Context) {
 // @Router      /auth/login [post]
 func (ctrl *authController) Login(c *gin.Context) {
 	db, _ := c.Keys["database"].(*ent.Client)
+	rc, _ := c.Keys["redis"].(*redis.Client)
 	// validator
 	req := struct {
 		Email    string `json:"email" binding:"required"`
 		Password string `json:"password" binding:"required,min=3,max=10"`
 	}{}
-	if err := c.Bind(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.AbortWithError(http.StatusUnauthorized, err)
 		return
 	}
-	// check exist user
+	// check exist user from database
 	user, err := db.User.
 		Query().
-		Where(
-			user.EmailContains(req.Email)).
+		Where(user.EmailContains(req.Email)).
 		Only(c)
 	if err != nil {
 		c.AbortWithError(http.StatusUnauthorized, err)
@@ -137,25 +126,21 @@ func (ctrl *authController) Login(c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	// access token
-	accessToken, err := jwt.CreateAccessToken(user.ID)
+	// create token
+	token, err := jwt.CreateToken(user.ID)
 	if err != nil {
-		c.AbortWithError(http.StatusUnauthorized, err)
+		c.AbortWithError(http.StatusUnprocessableEntity, err)
 		return
 	}
-	// refresh token
-	refreshToken, err := jwt.CreateRefreshToken(user.ID)
-	if err != nil {
-		c.AbortWithError(http.StatusUnauthorized, err)
+	// save the redis
+	if err := jwt.SaveTokenData(rc, user.ID, token); err != nil {
+		c.AbortWithError(http.StatusUnprocessableEntity, err)
 		return
 	}
-	// set cookie
-	c.SetCookie("access-token", accessToken, 60*60*24*7, "/", "localhost:8000", false, true)
-	c.JSON(http.StatusOK, gin.H{
-		"status":       200,
-		"message":      "토큰 발급 완료",
-		"accessToken":  accessToken,
-		"refreshToken": refreshToken,
+	// response token data
+	c.JSON(http.StatusOK, map[string]string{
+		"access_token":  token.AccessToken,
+		"refresh_token": token.RefreshToken,
 	})
 }
 
@@ -167,11 +152,6 @@ func (ctrl *authController) Login(c *gin.Context) {
 // @Success     200
 // @Router      /auth/check [get]
 func (ctrl *authController) Check(c *gin.Context) {
-	userID := c.Request.Header.Get("x-request-id")
-	if userID == "" {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
 	c.Status(http.StatusOK)
 }
 
@@ -183,6 +163,18 @@ func (ctrl *authController) Check(c *gin.Context) {
 // @Success     200
 // @Router      /auth/logout [post]
 func (ctrl *authController) Logout(c *gin.Context) {
+	rc, _ := c.Keys["redis"].(*redis.Client)
+	// delete token data
+	au, err := jwt.ExtractTokenMetadata(c)
+	if err != nil {
+		c.AbortWithError(http.StatusUnauthorized, err)
+		return
+	}
+	deleted, err := jwt.DeleteTokenData(rc, au.AccessUUID)
+	if err != nil || deleted == 0 {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 	c.SetCookie("access-token", "", 0, "/", "", false, true)
 	c.Status(http.StatusNoContent)
 }

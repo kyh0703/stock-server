@@ -30,7 +30,7 @@ func NewPostController(rg *gin.RouterGroup) *postController {
 func (ctrl *postController) Index() *gin.RouterGroup {
 	route := ctrl.rg.Group(ctrl.path)
 	route.GET("/", ctrl.List)
-	route.POST("/write", middleware.CheckLoggedIn(), ctrl.Write)
+	route.POST("/write", middleware.TokenAuth(), ctrl.Write)
 	return route
 }
 
