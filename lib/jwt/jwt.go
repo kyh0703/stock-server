@@ -12,6 +12,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 	"github.com/kyh0703/stock-server/config"
+	"github.com/kyh0703/stock-server/database"
 )
 
 type TokenMetaData struct {
@@ -81,7 +82,10 @@ func SaveTokenData(userID int, token *TokenMetaData) error {
 		return err
 	}
 	if err := database.Redis().Set(
-		token.RefreshUUID, strconv.Itoa(userID), rt.Sub(now)).Err(); err != nil {
+		token.RefreshUUID,
+		strconv.Itoa(userID),
+		rt.Sub(now)).
+		Err(); err != nil {
 		return err
 	}
 	return nil

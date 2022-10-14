@@ -9,7 +9,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"github.com/gofiber/fiber/v2"
 	"github.com/kyh0703/stock-server/database"
-	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/post"
 	"github.com/kyh0703/stock-server/ent/predicate"
 	"github.com/kyh0703/stock-server/ent/user"
