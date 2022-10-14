@@ -9,8 +9,9 @@ import (
 	"time"
 
 	"github.com/kyh0703/stock-server/config"
-	"github.com/kyh0703/stock-server/controller"
+	"github.com/kyh0703/stock-server/database"
 	_ "github.com/kyh0703/stock-server/docs"
+	"github.com/kyh0703/stock-server/routes"
 )
 
 // @title Swagger Example API
@@ -30,31 +31,26 @@ func main() {
 	defer stop()
 
 	// init ent client
-	ec, err := config.ConnectDatabase(ctx)
+	ec, err := database.ConnectDb(ctx)
 	if err != nil {
 		log.Fatalf("failed connection database: %v", err)
 	}
 	defer ec.Close()
 
 	// init redis client
-	rc, err := config.ConnectRedis()
+	rc, err := database.ConnectRedis()
 	if err != nil {
 		log.Fatalf("failed connection redis: %v", err)
 	}
 	defer rc.Close()
 
-	// set routing
-	app := controller.SetupRouter(ec, rc)
-	// server configure
-	srv := &http.Server{
-		Addr:    ":8000",
-		Handler: app,
-	}
+	// create fiber app
+	app := routes.New()
 
 	// initializing the server in goroutine so that
 	// it won't block the graceful shutdown handling below
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := app.Listen(":" + config.Env.Port); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s\n", err)
 		}
 	}()
@@ -69,7 +65,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := app.Shutdown(); err != nil {
 		log.Fatal("Server forced to shutdown: ", err)
 	}
 

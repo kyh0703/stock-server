@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	"time"
 
 	"github.com/caarlos0/env"
 	"github.com/joho/godotenv"
@@ -11,10 +12,12 @@ var Env Environment
 
 type Environment struct {
 	// App
-	Mode             string `env:"GIN_MODE" envDefault:"debug"`
-	Port             string `env:"APP_PORT" envDefault:"8000"`
-	AccessSecretKey  string `env:"ACCESS_SECRET_KEY" envDefault:"secret"`
-	RefreshSecretKey string `env:"REFRESH_SECRET_KEY" envDefault:"refresh"`
+	Mode             string        `env:"GIN_MODE" envDefault:"debug"`
+	Port             string        `env:"APP_PORT" envDefault:"8000"`
+	AccessSecretKey  string        `env:"ACCESS_SECRET_KEY" envDefault:"secret"`
+	RefreshSecretKey string        `env:"REFRESH_SECRET_KEY" envDefault:"refresh"`
+	ReadTimeout      time.Duration `env:"READ_TIME_OUT" envDefault:"3s"`
+
 	// Database
 	DBType     string `env:"DB_NAME" envDefault:"mysql"`
 	DBHost     string `env:"DB_HOST" envDefault:"127.0.0.1"`

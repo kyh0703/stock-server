@@ -1,15 +1,16 @@
 package v1
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis"
+	"github.com/gofiber/fiber/v2"
 	"github.com/kyh0703/stock-server/config"
-	"github.com/kyh0703/stock-server/ent"
+	"github.com/kyh0703/stock-server/database"
 	"github.com/kyh0703/stock-server/ent/user"
 	"github.com/kyh0703/stock-server/lib/jwt"
 	"github.com/kyh0703/stock-server/lib/password"
@@ -17,25 +18,25 @@ import (
 )
 
 type authController struct {
-	path string
-	rg   *gin.RouterGroup
+	path   string
+	router fiber.Router
 }
 
-func NewAuthController(rg *gin.RouterGroup) *authController {
+func NewAuthController(router fiber.Router) *authController {
 	return &authController{
-		path: "/auth",
-		rg:   rg,
+		path:   "/auth",
+		router: router,
 	}
 }
 
-func (ctrl *authController) Index() *gin.RouterGroup {
-	route := ctrl.rg.Group(ctrl.path)
-	route.POST("/register", ctrl.Register)
-	route.POST("/login", ctrl.Login)
-	route.GET("/check", middleware.TokenAuth(), ctrl.Check)
-	route.POST("/logout", middleware.TokenAuth(), ctrl.Logout)
-	route.POST("/refresh", ctrl.Refresh)
-	return route
+func (ctrl *authController) Index() fiber.Router {
+	r := ctrl.router.Group(ctrl.path)
+	r.Post("/register", ctrl.Register)
+	r.Post("/login", ctrl.Login)
+	r.Get("/check", middleware.TokenAuth(), ctrl.Check)
+	r.Post("/logout", middleware.TokenAuth(), ctrl.Logout)
+	r.Post("/refresh", ctrl.Refresh)
+	return r
 }
 
 // Register     godoc
@@ -47,51 +48,49 @@ func (ctrl *authController) Index() *gin.RouterGroup {
 // @Param       password string
 // @Success     200
 // @Router      /auth/register [post]
-func (ctrl *authController) Register(c *gin.Context) {
-	db, _ := c.Keys["database"].(*ent.Client)
-	// validator
+func (ctrl *authController) Register(c *fiber.Ctx) error {
 	req := struct {
-		Email           string `json:"email" binding:"required"`
-		Password        string `json:"password" binding:"required,min=3,max=10"`
-		PasswordConfirm string `json:"passwordConfirm" binding:"required,min=3,max=10"`
-		Username        string `json:"username" binding:"required"`
+		Email           string `json:"email" validate:"required"`
+		Password        string `json:"password" validate:"required,min=3,max=10"`
+		PasswordConfirm string `json:"passwordConfirm" validate:"required,min=3,max=10"`
+		Username        string `json:"username" validate:"required"`
 	}{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
+	// body parser
+	if err := c.BodyParser(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	// validate
+	if err := validator.New().StructCtx(c.Context(), req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
 	// compare "Password" to "PasswordConfirm"
 	if req.Password != req.PasswordConfirm {
-		c.AbortWithError(http.StatusBadRequest, errors.New("confirm password"))
-		return
+		return fiber.ErrBadRequest
 	}
 	// hash password
 	hashPassword, err := password.HashPassword(req.Password)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// check the exist user
-	exist, err := db.User.
+	exist, err := database.Ent().User.
 		Query().
 		Where(user.EmailContains(req.Email)).
-		Exist(c)
+		Exist(c.Context())
 	if err != nil || exist {
-		c.AbortWithStatus(http.StatusConflict)
-		return
+		return c.SendStatus(fiber.StatusConflict)
 	}
 	// register in database
-	_, err = db.User.
+	_, err = database.Ent().User.
 		Create().
 		SetUsername(req.Username).
 		SetPassword(hashPassword).
 		SetEmail(req.Email).
-		Save(c)
+		Save(c.Context())
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	c.Status(http.StatusOK)
+	return c.SendStatus(http.StatusOK)
 }
 
 // Login        godoc
@@ -103,46 +102,43 @@ func (ctrl *authController) Register(c *gin.Context) {
 // @Param       password string
 // @Success     200
 // @Router      /auth/login [post]
-func (ctrl *authController) Login(c *gin.Context) {
-	db, _ := c.Keys["database"].(*ent.Client)
-	rc, _ := c.Keys["redis"].(*redis.Client)
-	// validate request message
+func (ctrl *authController) Login(c *fiber.Ctx) error {
 	req := struct {
-		Email    string `json:"email" binding:"required"`
-		Password string `json:"password" binding:"required,min=3,max=10"`
+		Email    string `json:"email" validate:"required"`
+		Password string `json:"password" validate:"required,min=3,max=10"`
 	}{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.AbortWithError(http.StatusUnauthorized, err)
-		return
+	// body parser
+	if err := c.BodyParser(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	// validate request message
+	if errors := validator.New().StructCtx(c.Context(), req); errors != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(errors)
 	}
 	// check exist user from database
-	user, err := db.User.
+	user, err := database.Ent().User.
 		Query().
 		Where(user.EmailContains(req.Email)).
-		Only(c)
+		Only(c.Context())
 	if err != nil {
-		c.AbortWithError(http.StatusUnauthorized, err)
-		return
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// verify password
 	ok, err := password.CompareHashPassword(user.Password, req.Password)
 	if err != nil || !ok {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
+		return fiber.ErrUnauthorized
 	}
 	// create token
 	token, err := jwt.CreateToken(user.ID)
 	if err != nil {
-		c.AbortWithError(http.StatusUnprocessableEntity, err)
-		return
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// save the redis
 	if err := jwt.SaveTokenData(rc, user.ID, token); err != nil {
-		c.AbortWithError(http.StatusUnprocessableEntity, err)
-		return
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// response token data
-	c.JSON(http.StatusOK, gin.H{
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"access_token":  token.AccessToken,
 		"refresh_token": token.RefreshToken,
 	})
@@ -155,7 +151,7 @@ func (ctrl *authController) Login(c *gin.Context) {
 // @Produce     json
 // @Success     200
 // @Router      /auth/check [get]
-func (ctrl *authController) Check(c *gin.Context) {
+func (ctrl *authController) Check(c *fiber.Ctx) error {
 	c.Status(http.StatusOK)
 }
 
@@ -166,7 +162,7 @@ func (ctrl *authController) Check(c *gin.Context) {
 // @Produce     json
 // @Success     200
 // @Router      /auth/logout [post]
-func (ctrl *authController) Logout(c *gin.Context) {
+func (ctrl *authController) Logout(c *fiber.Ctx) error {
 	rc, _ := c.Keys["redis"].(*redis.Client)
 	// get token metadata
 	au, err := jwt.ExtractTokenMetadata(c)
@@ -192,7 +188,7 @@ func (ctrl *authController) Logout(c *gin.Context) {
 // @Param       password string
 // @Success     200
 // @Router      /auth/refresh [post]
-func (ctrl *authController) Refresh(c *gin.Context) {
+func (ctrl *authController) Refresh(c *fiber.Ctx) error {
 	rc, _ := c.Keys["redis"].(*redis.Client)
 	// validate request message
 	req := struct {

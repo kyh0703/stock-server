@@ -7,7 +7,8 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"github.com/kyh0703/stock-server/database"
 	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/post"
 	"github.com/kyh0703/stock-server/ent/predicate"
@@ -16,23 +17,23 @@ import (
 )
 
 type postController struct {
-	path string
-	rg   *gin.RouterGroup
+	path   string
+	router fiber.Router
 }
 
-func NewPostController(rg *gin.RouterGroup) *postController {
+func NewPostController(router fiber.Router) *postController {
 	return &postController{
-		path: "/post",
-		rg:   rg,
+		path:   "/post",
+		router: router,
 	}
 }
 
-func (ctrl *postController) Index() *gin.RouterGroup {
-	route := ctrl.rg.Group(ctrl.path)
-	route.GET("/", ctrl.List)
-	route.GET("/:id", ctrl.GetPostById)
-	route.POST("/write", middleware.TokenAuth(), ctrl.Write)
-	return route
+func (ctrl *postController) Index() *fiber.Router {
+	r := ctrl.router.Group(ctrl.path)
+	r.Get("/", ctrl.List)
+	r.Get("/:id", ctrl.GetPostById)
+	r.Post("/write", middleware.TokenAuth(), ctrl.Write)
+	return r
 }
 
 // Register     godoc
@@ -44,8 +45,7 @@ func (ctrl *postController) Index() *gin.RouterGroup {
 // @Param       password string
 // @Success     200
 // @Router      /auth/register [post]
-func (ctrl *postController) Write(c *gin.Context) {
-	db, _ := c.Keys["database"].(*ent.Client)
+func (ctrl *postController) Write(c *fiber.Ctx) error {
 	// validator
 	userID, err := strconv.Atoi(c.Request.Header.Get("x-request-id"))
 	if err != nil || userID == 0 {
@@ -57,23 +57,21 @@ func (ctrl *postController) Write(c *gin.Context) {
 		Body  string   `json:"body" binding:"required"`
 		Tags  []string `json:"tags" binding:"required"`
 	}{}
-	if err := c.Bind(&req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
+	if err := c.Bind(req); err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 	// save the database
-	post, err := db.Post.
+	post, err := database.Ent().Post.
 		Create().
 		SetTitle(req.Title).
 		SetBody(req.Body).
 		SetTags(req.Tags).
 		SetUserID(userID).
-		Save(c)
+		Save(c.Context())
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
-	c.JSON(http.StatusOK, post)
+	return c.Status(fiber.StatusOK).JSON(post)
 }
 
 // Register     godoc
@@ -85,19 +83,17 @@ func (ctrl *postController) Write(c *gin.Context) {
 // @Param       password string
 // @Success     200
 // @Router      /auth/register [post]
-func (ctrl *postController) List(c *gin.Context) {
-	db, _ := c.Keys["database"].(*ent.Client)
+func (ctrl *postController) List(c *fiber.Ctx) error {
 	// get query data
 	var (
-		page     = c.DefaultQuery("page", "1")
+		page     = c.Query("page", "1")
 		tag      = c.Query("tag")
 		username = c.Query("username")
 	)
 	// parse page
 	pageInt, err := strconv.Atoi(page)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// make query
 	var query predicate.Post
@@ -110,21 +106,19 @@ func (ctrl *postController) List(c *gin.Context) {
 		query = post.HasUserWith(user.UsernameContains(username))
 	}
 	// select data
-	posts, err := db.Post.
+	posts, err := database.Ent().Post.
 		Query().
 		Limit(10).
 		Offset((pageInt - 1) * 10).
 		Where(query).
-		All(c)
+		All(c.Context())
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// get post count
 	postCount, err := db.Post.Query().Where(query).Count(c)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	c.Writer.Header().Set("last-page", strconv.Itoa(int(math.Ceil(float64(postCount/10)))))
 	c.JSON(http.StatusOK, posts)
@@ -139,28 +133,24 @@ func (ctrl *postController) List(c *gin.Context) {
 // @Param       password string
 // @Success     200
 // @Router      /auth/register [post]
-func (ctrl *postController) GetPostById(c *gin.Context) {
-	db, _ := c.Keys["database"].(*ent.Client)
+func (ctrl *postController) GetPostById(c *fiber.Ctx) error {
 	// validate
 	param := c.Param("id")
 	if param == "" {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
+		return c.SendStatus(fiber.StatusBadRequest)
 	}
 	// strconv
 	id, err := strconv.Atoi(param)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// get post data
-	post, err := db.Post.
+	post, err := database.Ent().Post.
 		Query().
 		Where(post.ID(id)).
-		Only(c)
+		Only(c.Context())
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	c.JSON(http.StatusOK, post)
 }

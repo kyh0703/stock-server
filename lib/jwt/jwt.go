@@ -66,17 +66,22 @@ func CreateToken(userID int) (*TokenMetaData, error) {
 	return t, nil
 }
 
-func SaveTokenData(client *redis.Client, userID int, token *TokenMetaData) error {
+func SaveTokenData(userID int, token *TokenMetaData) error {
 	// convert Unis to UTC
 	var (
 		at  = time.Unix(token.AccessTokenExpires, 0)
 		rt  = time.Unix(token.RefreshTokenExpires, 0)
 		now = time.Now()
 	)
-	if err := client.Set(token.AccessUUID, strconv.Itoa(userID), at.Sub(now)).Err(); err != nil {
+	if err := database.Redis().Set(
+		token.AccessUUID,
+		strconv.Itoa(userID),
+		at.Sub(now)).
+		Err(); err != nil {
 		return err
 	}
-	if err := client.Set(token.RefreshUUID, strconv.Itoa(userID), rt.Sub(now)).Err(); err != nil {
+	if err := database.Redis().Set(
+		token.RefreshUUID, strconv.Itoa(userID), rt.Sub(now)).Err(); err != nil {
 		return err
 	}
 	return nil
