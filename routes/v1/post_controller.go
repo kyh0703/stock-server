@@ -2,7 +2,6 @@ package v1
 
 import (
 	"math"
-	"net/http"
 	"strconv"
 
 	"entgo.io/ent/dialect/sql"
@@ -27,7 +26,7 @@ func NewPostController(router fiber.Router) *postController {
 	}
 }
 
-func (ctrl *postController) Index() *fiber.Router {
+func (ctrl *postController) Index() fiber.Router {
 	r := ctrl.router.Group(ctrl.path)
 	r.Get("/", ctrl.List)
 	r.Get("/:id", ctrl.GetPostById)
@@ -40,23 +39,20 @@ func (ctrl *postController) Index() *fiber.Router {
 // @Description register stock api
 // @Tags        auth
 // @Produce     json
-// @Param       username string
-// @Param       password string
 // @Success     200
 // @Router      /auth/register [post]
 func (ctrl *postController) Write(c *fiber.Ctx) error {
 	// validator
-	userID, err := strconv.Atoi(c.Request.Header.Get("x-request-id"))
+	userID, err := strconv.Atoi(c.Get("x-request-id"))
 	if err != nil || userID == 0 {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	req := struct {
 		Title string   `json:"title" binding:"required"`
 		Body  string   `json:"body" binding:"required"`
 		Tags  []string `json:"tags" binding:"required"`
 	}{}
-	if err := c.Bind(req); err != nil {
+	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 	// save the database
@@ -78,8 +74,6 @@ func (ctrl *postController) Write(c *fiber.Ctx) error {
 // @Description register stock api
 // @Tags        auth
 // @Produce     json
-// @Param       username string
-// @Param       password string
 // @Success     200
 // @Router      /auth/register [post]
 func (ctrl *postController) List(c *fiber.Ctx) error {
@@ -115,12 +109,15 @@ func (ctrl *postController) List(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// get post count
-	postCount, err := db.Post.Query().Where(query).Count(c)
+	postCount, err := database.Ent().Post.
+		Query().
+		Where(query).
+		Count(c.Context())
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	c.Writer.Header().Set("last-page", strconv.Itoa(int(math.Ceil(float64(postCount/10)))))
-	c.JSON(http.StatusOK, posts)
+	c.Response().Header.Set("last-page", strconv.Itoa(int(math.Ceil(float64(postCount/10)))))
+	return c.Status(fiber.StatusOK).JSON(posts)
 }
 
 // Register     godoc
@@ -128,15 +125,13 @@ func (ctrl *postController) List(c *fiber.Ctx) error {
 // @Description register stock api
 // @Tags        auth
 // @Produce     json
-// @Param       username string
-// @Param       password string
 // @Success     200
 // @Router      /auth/register [post]
 func (ctrl *postController) GetPostById(c *fiber.Ctx) error {
 	// validate
-	param := c.Param("id")
+	param := c.Params("id")
 	if param == "" {
-		return c.SendStatus(fiber.StatusBadRequest)
+		return fiber.ErrBadRequest
 	}
 	// strconv
 	id, err := strconv.Atoi(param)
@@ -151,5 +146,5 @@ func (ctrl *postController) GetPostById(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	c.JSON(http.StatusOK, post)
+	return c.Status(fiber.StatusOK).JSON(post)
 }

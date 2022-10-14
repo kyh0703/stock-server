@@ -13,7 +13,11 @@ const docTemplate = `{
         "contact": {
             "name": "API support",
             "url": "http://www.swagger.io/support",
-            "email": "kyh0703@nate.com"
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
         },
         "version": "{{.Version}}"
     },
@@ -39,31 +43,28 @@ const docTemplate = `{
         },
         "/auth/login": {
             "post": {
-                "description": "Responds with the list of all books as JSON.",
+                "description": "get string by ID",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Get books array",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
+                "summary": "Show a account",
+                "operationId": "get-string-by-int",
+                "responses": {}
             }
         },
-        "/auth/logout": {
+        "/auth/refresh": {
             "post": {
-                "description": "Responds with the list of all books as JSON.",
+                "description": "register stock api",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "auth"
                 ],
-                "summary": "Get books array",
+                "summary": "register auth info",
                 "responses": {
                     "200": {
                         "description": "OK"

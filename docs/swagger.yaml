@@ -2,10 +2,13 @@ basePath: /api/v1
 host: localhost:8000
 info:
   contact:
-    email: kyh0703@nate.com
+    email: support@swagger.io
     name: API support
     url: http://www.swagger.io/support
   description: This is a sample server client server
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: Swagger Example API
   version: "1.0"
 paths:
@@ -22,24 +25,23 @@ paths:
       - auth
   /auth/login:
     post:
-      description: Responds with the list of all books as JSON.
+      consumes:
+      - application/json
+      description: get string by ID
+      operationId: get-string-by-int
       produces:
       - application/json
-      responses:
-        "200":
-          description: OK
-      summary: Get books array
-      tags:
-      - auth
-  /auth/logout:
+      responses: {}
+      summary: Show a account
+  /auth/refresh:
     post:
-      description: Responds with the list of all books as JSON.
+      description: register stock api
       produces:
       - application/json
       responses:
         "200":
           description: OK
-      summary: Get books array
+      summary: register auth info
       tags:
       - auth
   /auth/register:

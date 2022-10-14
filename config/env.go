@@ -30,11 +30,12 @@ type Environment struct {
 func init() {
 	godotenv.Load(".env")
 	env.Parse(&Env)
-	log.Println("-----------------------------------")
+	log.Println("Environment")
+	log.Println("────────────────────────────────────")
 	log.Println("[APP]")
 	log.Println("GIN_MODE            = ", Env.Mode)
 	log.Println("APP_PORT            = ", Env.Port)
-	log.Println("-----------------------------------")
+	log.Println("────────────────────────────────────")
 	log.Println("[DATABASE]")
 	log.Println("DB_NAME             = ", Env.DBType)
 	log.Println("DB_HOST             = ", Env.DBHost)
@@ -42,5 +43,5 @@ func init() {
 	log.Println("DB_USER             = ", Env.DBUser)
 	log.Println("DB_PASSWORD         = ", Env.DBPassword)
 	log.Println("DB_OPTIONS          = ", Env.DBOptions)
-	log.Println("-----------------------------------")
+	log.Println("────────────────────────────────────")
 }
