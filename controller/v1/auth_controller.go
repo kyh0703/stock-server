@@ -142,7 +142,7 @@ func (ctrl *authController) Login(c *gin.Context) {
 		return
 	}
 	// response token data
-	c.JSON(http.StatusOK, map[string]string{
+	c.JSON(http.StatusOK, gin.H{
 		"access_token":  token.AccessToken,
 		"refresh_token": token.RefreshToken,
 	})
@@ -233,7 +233,7 @@ func (ctrl *authController) Refresh(c *gin.Context) {
 		c.AbortWithError(http.StatusForbidden, err)
 		return
 	}
-	c.JSON(http.StatusCreated, map[string]string{
+	c.JSON(http.StatusCreated, gin.H{
 		"access_token":  token.AccessToken,
 		"refresh_token": token.RefreshToken,
 	})

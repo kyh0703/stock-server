@@ -44,11 +44,11 @@ func main() {
 	defer rc.Close()
 
 	// set routing
-	router := controller.SetupRouter(ec, rc)
+	app := controller.SetupRouter(ec, rc)
 	// server configure
 	srv := &http.Server{
 		Addr:    ":8000",
-		Handler: router,
+		Handler: app,
 	}
 
 	// initializing the server in goroutine so that
