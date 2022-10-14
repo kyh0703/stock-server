@@ -12,7 +12,7 @@ import (
 )
 
 func ConnectDatabase(ctx context.Context) (*ent.Client, error) {
-	client, err := ent.Open(dialect.MySQL, "root:dnflth@tcp(localhost:3306)/stock?parseTime=true")
+	client, err := ent.Open(dialect.MySQL, "root:1234@tcp(localhost:3306)/stock?parseTime=true")
 	if err != nil {
 		return nil, err
 	}

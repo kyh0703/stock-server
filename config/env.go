@@ -11,9 +11,10 @@ var Env Environment
 
 type Environment struct {
 	// App
-	Mode              string        `env:"GIN_MODE" envDefault:"debug"`
-	Port              string        `env:"APP_PORT" envDefault:"8000"`
-	APISecret         string        `env:"API_SECRET" envDefault:"secret"`
+	Mode             string `env:"GIN_MODE" envDefault:"debug"`
+	Port             string `env:"APP_PORT" envDefault:"8000"`
+	AccessSecretKey  string `env:"ACCESS_SECRET_KEY" envDefault:"secret"`
+	RefreshSecretKey string `env:"REFRESH_SECRET_KEY" envDefault:"refresh"`
 	// Database
 	DBType     string `env:"DB_NAME" envDefault:"mysql"`
 	DBHost     string `env:"DB_HOST" envDefault:"127.0.0.1"`
@@ -30,7 +31,6 @@ func init() {
 	log.Println("[APP]")
 	log.Println("GIN_MODE            = ", Env.Mode)
 	log.Println("APP_PORT            = ", Env.Port)
-	log.Println("APP_SECRET          = ", Env.APISecret)
 	log.Println("-----------------------------------")
 	log.Println("[DATABASE]")
 	log.Println("DB_NAME             = ", Env.DBType)

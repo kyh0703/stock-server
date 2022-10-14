@@ -2,10 +2,13 @@ package v1
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
+	"github.com/kyh0703/stock-server/config"
 	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/user"
 	"github.com/kyh0703/stock-server/lib/jwt"
@@ -31,6 +34,7 @@ func (ctrl *authController) Index() *gin.RouterGroup {
 	route.POST("/login", ctrl.Login)
 	route.GET("/check", middleware.TokenAuth(), ctrl.Check)
 	route.POST("/logout", middleware.TokenAuth(), ctrl.Logout)
+	route.POST("/refresh", ctrl.Refresh)
 	return route
 }
 
@@ -102,7 +106,7 @@ func (ctrl *authController) Register(c *gin.Context) {
 func (ctrl *authController) Login(c *gin.Context) {
 	db, _ := c.Keys["database"].(*ent.Client)
 	rc, _ := c.Keys["redis"].(*redis.Client)
-	// validator
+	// validate request message
 	req := struct {
 		Email    string `json:"email" binding:"required"`
 		Password string `json:"password" binding:"required,min=3,max=10"`
@@ -177,4 +181,60 @@ func (ctrl *authController) Logout(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+// Register     godoc
+// @Summary     register auth info
+// @Description register stock api
+// @Tags        auth
+// @Produce     json
+// @Param       username string
+// @Param       password string
+// @Success     200
+// @Router      /auth/refresh [post]
+func (ctrl *authController) Refresh(c *gin.Context) {
+	rc, _ := c.Keys["redis"].(*redis.Client)
+	// validate request message
+	req := struct {
+		RefreshToken string `json:"refresh_token" binding:"required"`
+	}{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	// Get claims with refresh secret key
+	claims, err := jwt.ValidateToken(c, req.RefreshToken, config.Env.RefreshSecretKey)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	// token
+	refreshUUID, ok := claims["refresh_uuid"].(string) // convert the interface to string
+	if !ok {
+		c.AbortWithError(http.StatusUnprocessableEntity, err)
+		return
+	}
+	userID, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
+	if err != nil {
+		c.AbortWithError(http.StatusUnprocessableEntity, err)
+		return
+	}
+	deleted, err := jwt.DeleteTokenData(rc, refreshUUID)
+	if err != nil || deleted == 0 {
+		c.AbortWithStatus(http.StatusUnprocessableEntity)
+		return
+	}
+	token, err := jwt.CreateToken(int(userID))
+	if err != nil {
+		c.AbortWithError(http.StatusForbidden, err)
+		return
+	}
+	if err := jwt.SaveTokenData(rc, int(userID), token); err != nil {
+		c.AbortWithError(http.StatusForbidden, err)
+		return
+	}
+	c.JSON(http.StatusCreated, map[string]string{
+		"access_token":  token.AccessToken,
+		"refresh_token": token.RefreshToken,
+	})
 }

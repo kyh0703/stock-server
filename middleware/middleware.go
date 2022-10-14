@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,33 +16,36 @@ func SetJSON() gin.HandlerFunc {
 	}
 }
 
-func SetDatabase(client *ent.Client) gin.HandlerFunc {
+func SetEntClient(client *ent.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("database", client)
 		c.Next()
 	}
 }
 
-func SetRedis(client *redis.Client) gin.HandlerFunc {
+func SetRedisClient(client *redis.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("redis", client)
 		c.Next()
 	}
 }
 
-func SetContext(ctx context.Context) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Set("context", ctx)
-		c.Next()
-	}
-}
-
 func TokenAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := jwt.ValidateToken(c); err != nil {
+		rc, _ := c.Keys["redis"].(*redis.Client)
+		// validate token
+		accessData, err := jwt.ExtractTokenMetadata(c)
+		if err != nil {
 			c.AbortWithError(http.StatusUnauthorized, err)
 			return
 		}
+		// validate in redis token
+		userID, err := jwt.GetUserIDFromRedis(rc, accessData.AccessUUID)
+		if err != nil {
+			c.AbortWithError(http.StatusUnauthorized, err)
+			return
+		}
+		c.Set("x-request-id", userID)
 		c.Next()
 	}
 }

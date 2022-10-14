@@ -3,7 +3,6 @@ package jwt
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -36,7 +35,7 @@ func generateAccessToken(id int, UUID string, expire int64) (string, error) {
 	claims["user_id"] = id
 	claims["exp"] = expire
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(config.Env.APISecret))
+	return token.SignedString([]byte(config.Env.AccessSecretKey))
 }
 
 func generateRefreshToken(id int, UUID string, expire int64) (string, error) {
@@ -45,7 +44,7 @@ func generateRefreshToken(id int, UUID string, expire int64) (string, error) {
 	claims["user_id"] = id
 	claims["exp"] = expire
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(config.Env.APISecret))
+	return token.SignedString([]byte(config.Env.RefreshSecretKey))
 }
 
 func CreateToken(userID int) (*TokenMetaData, error) {
@@ -91,22 +90,30 @@ func DeleteTokenData(client *redis.Client, UUID string) (int64, error) {
 	return deleted, nil
 }
 
+func GetUserIDFromRedis(client *redis.Client, UUID string) (uint64, error) {
+	id, err := client.Get(UUID).Result()
+	if err != nil {
+		return 0, err
+	}
+	userID, _ := strconv.ParseUint(id, 10, 64)
+	return userID, nil
+}
+
 func ValidateTokenFromCookie(accessToken string) (jwt.MapClaims, error) {
 	claims := jwt.MapClaims{}
 	_, err := jwt.ParseWithClaims(accessToken, &claims,
 		func(token *jwt.Token) (interface{}, error) {
-			return []byte(config.Env.APISecret), nil
+			return []byte(config.Env.AccessSecretKey), nil
 		})
 	return claims, err
 }
 
-func GetToken(c *gin.Context) (*jwt.Token, error) {
-	tokenString := ExtractToken(c)
+func GetToken(c *gin.Context, tokenString, secretKey string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("API_SECRET")), nil
+		return []byte(secretKey), nil
 	})
 	if err != nil {
 		return nil, err
@@ -114,31 +121,36 @@ func GetToken(c *gin.Context) (*jwt.Token, error) {
 	return token, nil
 }
 
-func ValidateToken(c *gin.Context) error {
-	token, err := GetToken(c)
+func ValidateToken(c *gin.Context, tokenString, key string) (jwt.MapClaims, error) {
+	token, err := GetToken(c, tokenString, key)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
-		return err
+	if claims, ok := token.Claims.(jwt.MapClaims); !ok && !token.Valid {
+		return nil, err
+	} else {
+		return claims, err
 	}
-	return nil
 }
 
 func ExtractToken(c *gin.Context) string {
+	// query
 	token := c.Query("token")
 	if token != "" {
 		return token
 	}
+	// header "Authorization"
 	bearerToken := c.Request.Header.Get("Authorization")
-	if len(strings.Split(bearerToken, " ")) == 2 {
-		return strings.Split(bearerToken, " ")[1]
+	strArr := strings.Split(bearerToken, " ")
+	if len(strArr) == 2 {
+		return strArr[1]
 	}
 	return ""
 }
 
 func ExtractTokenMetadata(c *gin.Context) (*AccessData, error) {
-	token, err := GetToken(c)
+	tokenString := ExtractToken(c)
+	token, err := GetToken(c, tokenString, config.Env.AccessSecretKey)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +160,7 @@ func ExtractTokenMetadata(c *gin.Context) (*AccessData, error) {
 		if !ok {
 			return nil, err
 		}
-		userID, err := strconv.ParseUint(fmt.Sprintf("%.0f", claims["user_id"]), 10, 32)
+		userID, err := strconv.ParseUint(fmt.Sprintf("%.0f", claims["user_id"]), 10, 64)
 		if err != nil {
 			return nil, err
 		}

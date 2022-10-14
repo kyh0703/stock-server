@@ -61,7 +61,8 @@ func (ctrl *postController) Write(c *gin.Context) {
 		return
 	}
 	// save the database
-	post, err := db.Post.Create().
+	post, err := db.Post.
+		Create().
 		SetTitle(req.Title).
 		SetBody(req.Body).
 		SetTags(req.Tags).

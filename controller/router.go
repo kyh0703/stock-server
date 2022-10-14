@@ -12,20 +12,20 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func NewRouter(ec *ent.Client, rc *redis.Client) *gin.Engine {
+func SetupRouter(ec *ent.Client, rc *redis.Client) *gin.Engine {
 	router := gin.Default()
-	router.Use(middleware.SetDatabase(ec))
-	router.Use(middleware.SetRedis(rc))
+	// set middleware
+	router.Use(middleware.SetEntClient(ec))
+	router.Use(middleware.SetRedisClient(rc))
 	router.Use(middleware.SetJSON())
-	return router
-}
-
-func SetupRouter(router *gin.Engine) {
+	// set swagger
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// routes
 	api := router.Group("/api")
 	rg := api.Group("v1")
 	{
 		v1.NewAuthController(rg).Index()
 		v1.NewPostController(rg).Index()
 	}
+	return router
 }

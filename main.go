@@ -44,8 +44,7 @@ func main() {
 	defer rc.Close()
 
 	// set routing
-	router := controller.NewRouter(ec, rc)
-	controller.SetupRouter(router)
+	router := controller.SetupRouter(ec, rc)
 	// server configure
 	srv := &http.Server{
 		Addr:    ":8000",
