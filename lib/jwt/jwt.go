@@ -8,8 +8,7 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/kyh0703/stock-server/config"
 	"github.com/kyh0703/stock-server/database"
@@ -91,16 +90,16 @@ func SaveTokenData(userID int, token *TokenMetaData) error {
 	return nil
 }
 
-func DeleteTokenData(client *redis.Client, UUID string) (int64, error) {
-	deleted, err := client.Del(UUID).Result()
+func DeleteTokenData(UUID string) (int64, error) {
+	deleted, err := database.Redis().Del(UUID).Result()
 	if err != nil {
 		return 0, err
 	}
 	return deleted, nil
 }
 
-func GetUserIDFromRedis(client *redis.Client, UUID string) (uint64, error) {
-	id, err := client.Get(UUID).Result()
+func GetUserIDFromRedis(UUID string) (uint64, error) {
+	id, err := database.Redis().Get(UUID).Result()
 	if err != nil {
 		return 0, err
 	}
@@ -117,7 +116,7 @@ func ValidateTokenFromCookie(accessToken string) (jwt.MapClaims, error) {
 	return claims, err
 }
 
-func GetToken(c *gin.Context, tokenString, secretKey string) (*jwt.Token, error) {
+func GetToken(c *fiber.Ctx, tokenString, secretKey string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -130,7 +129,7 @@ func GetToken(c *gin.Context, tokenString, secretKey string) (*jwt.Token, error)
 	return token, nil
 }
 
-func ValidateToken(c *gin.Context, tokenString, key string) (jwt.MapClaims, error) {
+func ValidateToken(c *fiber.Ctx, tokenString, key string) (jwt.MapClaims, error) {
 	token, err := GetToken(c, tokenString, key)
 	if err != nil {
 		return nil, err
@@ -142,14 +141,14 @@ func ValidateToken(c *gin.Context, tokenString, key string) (jwt.MapClaims, erro
 	}
 }
 
-func ExtractToken(c *gin.Context) string {
+func ExtractToken(c *fiber.Ctx) string {
 	// query
 	token := c.Query("token")
 	if token != "" {
 		return token
 	}
 	// header "Authorization"
-	bearerToken := c.Request.Header.Get("Authorization")
+	bearerToken := c.Get("Authorization")
 	strArr := strings.Split(bearerToken, " ")
 	if len(strArr) == 2 {
 		return strArr[1]
@@ -157,7 +156,7 @@ func ExtractToken(c *gin.Context) string {
 	return ""
 }
 
-func ExtractTokenMetadata(c *gin.Context) (*AccessData, error) {
+func ExtractTokenMetadata(c *fiber.Ctx) (*AccessData, error) {
 	tokenString := ExtractToken(c)
 	token, err := GetToken(c, tokenString, config.Env.AccessSecretKey)
 	if err != nil {

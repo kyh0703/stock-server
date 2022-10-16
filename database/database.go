@@ -24,7 +24,7 @@ func Ent() *ent.Client {
 func ConnectDb(ctx context.Context) (*ent.Client, error) {
 	var err error
 	eo.Do(func() {
-		// creaete ent client
+		// create ent client
 		ec, err = ent.Open(
 			dialect.MySQL,
 			"root:dnflth@tcp(localhost:3306)/stock?parseTime=true",

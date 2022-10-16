@@ -1,12 +1,17 @@
 package v1
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/kyh0703/stock-server/config"
 	"github.com/kyh0703/stock-server/database"
 	"github.com/kyh0703/stock-server/ent/user"
+	"github.com/kyh0703/stock-server/lib/jwt"
 	"github.com/kyh0703/stock-server/lib/password"
 	"github.com/kyh0703/stock-server/middleware"
 )
@@ -48,7 +53,8 @@ func (ctrl *authController) Register(c *fiber.Ctx) error {
 		Username        string `json:"username" validate:"required"`
 	}{}
 	// body parser
-	if err := c.BodyParser(req); err != nil {
+	if err := c.BodyParser(&req); err != nil {
+		log.Println(err)
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// validate
@@ -73,13 +79,22 @@ func (ctrl *authController) Register(c *fiber.Ctx) error {
 		return fiber.ErrConflict
 	}
 	// register in database
-	_, err = database.Ent().User.
+	user, err := database.Ent().User.
 		Create().
 		SetUsername(req.Username).
 		SetPassword(hashPassword).
 		SetEmail(req.Email).
 		Save(c.Context())
 	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	// create token
+	token, err := jwt.CreateToken(user.ID)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	// save the redis
+	if err := jwt.SaveTokenData(user.ID, token); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	return c.SendStatus(http.StatusOK)
@@ -98,7 +113,7 @@ func (ctrl *authController) Login(c *fiber.Ctx) error {
 		Password string `json:"password" validate:"required,min=3,max=10"`
 	}{}
 	// body parser
-	if err := c.BodyParser(req); err != nil {
+	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// validate request message
@@ -118,21 +133,20 @@ func (ctrl *authController) Login(c *fiber.Ctx) error {
 	if err != nil || !ok {
 		return fiber.ErrUnauthorized
 	}
-	// // create token
-	// token, err := jwt.CreateToken(user.ID)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusBadRequest).SendString(err.Error())
-	// }
-	// // save the redis
-	// if err := jwt.SaveTokenData(rc, user.ID, token); err != nil {
-	// 	return c.Status(fiber.StatusBadRequest).SendString(err.Error())
-	// }
+	// create token
+	token, err := jwt.CreateToken(user.ID)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	// save the redis
+	if err := jwt.SaveTokenData(user.ID, token); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
 	// response token data
-	// return c.Status(fiber.StatusOK).JSON(fiber.Map{
-	// 	"access_token":  token.AccessToken,
-	// 	"refresh_token": token.RefreshToken,
-	// })
-	return nil
+	return c.JSON(fiber.Map{
+		"access_token":  token.AccessToken,
+		"refresh_token": token.RefreshToken,
+	})
 }
 
 // Check        godoc
@@ -155,16 +169,15 @@ func (ctrl *authController) Check(c *fiber.Ctx) error {
 // @Router /auth/login [post]
 func (ctrl *authController) Logout(c *fiber.Ctx) error {
 	// get token metadata
-	// au, err := jwt.ExtractTokenMetadata(c)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
-	// }
-	// // delete token data
-	// deleted, err := jwt.DeleteTokenData(rc, au.AccessUUID)
-	// if err != nil || deleted == 0 {
-	// 	c.AbortWithStatus(http.StatusUnauthorized)
-	// 	return
-	// }
+	accessUser, err := jwt.ExtractTokenMetadata(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
+	}
+	// delete token data
+	deleted, err := jwt.DeleteTokenData(accessUser.AccessUUID)
+	if err != nil || deleted == 0 {
+		return fiber.ErrUnauthorized
+	}
 	return c.SendStatus(http.StatusNoContent)
 }
 
@@ -177,40 +190,39 @@ func (ctrl *authController) Logout(c *fiber.Ctx) error {
 // @Router      /auth/refresh [post]
 func (ctrl *authController) Refresh(c *fiber.Ctx) error {
 	// validate request message
-	// req := struct {
-	// 	RefreshToken string `json:"refresh_token" binding:"required"`
-	// }{}
-	// if err := c.BodyParser(&req); err != nil {
-	// 	return c.Status(fiber.StatusBadRequest).SendString(err.Error())
-	// }
-	// // Get claims with refresh secret key
-	// claims, err := jwt.ValidateToken(c, req.RefreshToken, config.Env.RefreshSecretKey)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusBadRequest).SendString(err.Error())
-	// }
-	// // token
-	// refreshUUID, ok := claims["refresh_uuid"].(string) // convert the interface to string
-	// if !ok {
-	// 	return c.Status(fiber.StatusUnprocessableEntity).SendString(err.Error())
-	// }
-	// userID, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusBadRequest).SendString(err.Error())
-	// }
-	// deleted, err := jwt.DeleteTokenData(rc, refreshUUID)
-	// if err != nil || deleted == 0 {
-	// 	return fiber.ErrUnprocessableEntity
-	// }
-	// token, err := jwt.CreateToken(int(userID))
-	// if err != nil {
-	// 	return c.Status(fiber.StatusForbidden).SendString(err.Error())
-	// }
-	// if err := jwt.SaveTokenData(rc, int(userID), token); err != nil {
-	// 	return c.Status(fiber.StatusForbidden).SendString(err.Error())
-	// }
-	// c.JSON(http.StatusCreated, gin.H{
-	// 	"access_token":  token.AccessToken,
-	// 	"refresh_token": token.RefreshToken,
-	// })
-	return nil
+	req := struct {
+		RefreshToken string `json:"refresh_token" binding:"required"`
+	}{}
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	// Get claims with refresh secret key
+	claims, err := jwt.ValidateToken(c, req.RefreshToken, config.Env.RefreshSecretKey)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	// token
+	refreshUUID, ok := claims["refresh_uuid"].(string) // convert the interface to string
+	if !ok {
+		return c.Status(fiber.StatusUnprocessableEntity).SendString(err.Error())
+	}
+	userID, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	deleted, err := jwt.DeleteTokenData(refreshUUID)
+	if err != nil || deleted == 0 {
+		return fiber.ErrUnprocessableEntity
+	}
+	token, err := jwt.CreateToken(int(userID))
+	if err != nil {
+		return c.Status(fiber.StatusForbidden).SendString(err.Error())
+	}
+	if err := jwt.SaveTokenData(int(userID), token); err != nil {
+		return c.Status(fiber.StatusForbidden).SendString(err.Error())
+	}
+	return c.JSON(fiber.Map{
+		"access_token":  token.AccessToken,
+		"refresh_token": token.RefreshToken,
+	})
 }
