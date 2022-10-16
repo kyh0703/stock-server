@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 
 	"github.com/kyh0703/stock-server/config"
 	v1 "github.com/kyh0703/stock-server/routes/v1"
@@ -17,7 +18,7 @@ func New() *fiber.App {
 
 	// middleware
 	app.Use(cors.New())
-	// app.Use(recover.New())
+	app.Use(recover.New())
 	app.Use(logger.New(config.Logger()))
 
 	// monitor

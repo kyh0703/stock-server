@@ -18,6 +18,5 @@ func Fiber(existView bool) fiber.Config {
 		cfg.Views = engine
 		cfg.ViewsLayout = "layouts/main"
 	}
-	// Define server settings.
 	return cfg
 }

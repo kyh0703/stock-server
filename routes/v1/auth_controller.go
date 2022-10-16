@@ -2,7 +2,6 @@ package v1
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -54,12 +53,11 @@ func (ctrl *authController) Register(c *fiber.Ctx) error {
 	}{}
 	// body parser
 	if err := c.BodyParser(&req); err != nil {
-		log.Println(err)
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// validate
 	if errors := validator.New().StructCtx(c.Context(), req); errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+		return c.Status(fiber.StatusBadRequest).SendString(errors.Error())
 	}
 	// compare "Password" to "PasswordConfirm"
 	if req.Password != req.PasswordConfirm {
@@ -79,22 +77,13 @@ func (ctrl *authController) Register(c *fiber.Ctx) error {
 		return fiber.ErrConflict
 	}
 	// register in database
-	user, err := database.Ent().User.
+	_, err = database.Ent().User.
 		Create().
 		SetUsername(req.Username).
 		SetPassword(hashPassword).
 		SetEmail(req.Email).
 		Save(c.Context())
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
-	}
-	// create token
-	token, err := jwt.CreateToken(user.ID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
-	}
-	// save the redis
-	if err := jwt.SaveTokenData(user.ID, token); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	return c.SendStatus(http.StatusOK)
@@ -117,8 +106,8 @@ func (ctrl *authController) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// validate request message
-	if errors := validator.New().StructCtx(c.Context(), req); errors != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(errors)
+	if err := validator.New().StructCtx(c.Context(), req); err != nil {
+		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 	// check exist user from database
 	user, err := database.Ent().User.
@@ -157,6 +146,10 @@ func (ctrl *authController) Login(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /auth/check [get]
 func (ctrl *authController) Check(c *fiber.Ctx) error {
+	userID := c.UserContext().Value("user_id").(int)
+	if userID == 0 {
+		return fiber.ErrBadRequest
+	}
 	return c.SendStatus(fiber.StatusOK)
 }
 
@@ -189,12 +182,16 @@ func (ctrl *authController) Logout(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /auth/refresh [post]
 func (ctrl *authController) Refresh(c *fiber.Ctx) error {
-	// validate request message
 	req := struct {
-		RefreshToken string `json:"refresh_token" binding:"required"`
+		RefreshToken string `json:"refresh_token" validate:"required"`
 	}{}
+	// body parser
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	// validate request message
+	if err := validator.New().StructCtx(c.Context(), req); err != nil {
+		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 	// Get claims with refresh secret key
 	claims, err := jwt.ValidateToken(c, req.RefreshToken, config.Env.RefreshSecretKey)

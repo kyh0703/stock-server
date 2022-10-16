@@ -1,7 +1,11 @@
 package middleware
 
 import (
+	"context"
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/kyh0703/stock-server/lib/jwt"
 )
 
 func SetJSON() fiber.Handler {
@@ -15,20 +19,18 @@ func SetJSON() fiber.Handler {
 
 func TokenAuth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// rc, _ := c.Keys["redis"].(*redis.Client)
-		// // validate token
-		// accessData, err := jwt.ExtractTokenMetadata(c)
-		// if err != nil {
-		// 	c.AbortWithError(http.StatusUnauthorized, err)
-		// 	return
-		// }
-		// // validate in redis token
-		// userID, err := jwt.GetUserIDFromRedis(rc, accessData.AccessUUID)
-		// if err != nil {
-		// 	c.AbortWithError(http.StatusUnauthorized, err)
-		// 	return
-		// }
-		// c.Set("x-request-id", userID)
+		// validate token
+		accessData, err := jwt.ExtractTokenMetadata(c)
+		if err != nil {
+			return c.Status(http.StatusUnauthorized).SendString(err.Error())
+		}
+		// validate in redis token
+		userID, err := jwt.GetUserIDFromRedis(accessData.AccessUUID)
+		if err != nil {
+			return c.Status(http.StatusUnauthorized).SendString(err.Error())
+		}
+		ctx := context.WithValue(c.Context(), "user_id", userID)
+		c.SetUserContext(ctx)
 		return c.Next()
 	}
 }

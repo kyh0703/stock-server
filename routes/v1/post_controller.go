@@ -6,6 +6,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/kyh0703/stock-server/database"
 	"github.com/kyh0703/stock-server/ent/post"
@@ -42,18 +43,18 @@ func (ctrl *postController) Index() fiber.Router {
 // @Success     200
 // @Router      /auth/register [post]
 func (ctrl *postController) Write(c *fiber.Ctx) error {
-	// validator
-	userID, err := strconv.Atoi(c.Get("x-request-id"))
-	if err != nil || userID == 0 {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
-	}
 	req := struct {
-		Title string   `json:"title" binding:"required"`
-		Body  string   `json:"body" binding:"required"`
-		Tags  []string `json:"tags" binding:"required"`
+		Title string   `json:"title" validate:"required"`
+		Body  string   `json:"body" validate:"required"`
+		Tags  []string `json:"tags" validate:"required"`
 	}{}
+	// body parser
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+	}
+	// validate request message
+	if err := validator.New().StructCtx(c.Context(), req); err != nil {
+		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 	// save the database
 	post, err := database.Ent().Post.
