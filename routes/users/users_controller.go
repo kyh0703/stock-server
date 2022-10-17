@@ -1,4 +1,4 @@
-package v1
+package users
 
 import (
 	"fmt"
@@ -8,33 +8,36 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/kyh0703/stock-server/config"
-	"github.com/kyh0703/stock-server/database"
-	"github.com/kyh0703/stock-server/ent/user"
 	"github.com/kyh0703/stock-server/lib/jwt"
-	"github.com/kyh0703/stock-server/lib/password"
 	"github.com/kyh0703/stock-server/middleware"
+	"github.com/kyh0703/stock-server/routes/auth"
+	usersdto "github.com/kyh0703/stock-server/routes/users/dto"
 )
 
-type authController struct {
-	path   string
-	router fiber.Router
+type usersController struct {
+	path        string
+	router      fiber.Router
+	userService UsersService
+	authService auth.AuthService
 }
 
-func NewAuthController(router fiber.Router) *authController {
-	return &authController{
-		path:   "/auth",
+func NewUsersController(router fiber.Router) *usersController {
+	return &usersController{
+		path:   "auth",
 		router: router,
 	}
 }
 
-func (ctrl *authController) Index() fiber.Router {
-	r := ctrl.router.Group(ctrl.path)
-	r.Post("/register", ctrl.Register)
-	r.Post("/login", ctrl.Login)
-	r.Get("/check", middleware.TokenAuth(), ctrl.Check)
-	r.Post("/logout", middleware.TokenAuth(), ctrl.Logout)
-	r.Post("/refresh", ctrl.Refresh)
-	return r
+func (ctrl *usersController) Path() string {
+	return ctrl.path
+}
+
+func (ctrl *usersController) Routes() {
+	ctrl.router.Post("/signup", ctrl.SignUp)
+	ctrl.router.Post("/login", ctrl.Login)
+	ctrl.router.Get("/check", middleware.TokenAuth(), ctrl.Check)
+	ctrl.router.Post("/logout", middleware.TokenAuth(), ctrl.Logout)
+	ctrl.router.Post("/refresh", ctrl.Refresh)
 }
 
 // Register     godoc
@@ -43,99 +46,71 @@ func (ctrl *authController) Index() fiber.Router {
 // @Tags        auth
 // @Produce     json
 // @Success     200
-// @Router      /auth/register [post]
-func (ctrl *authController) Register(c *fiber.Ctx) error {
-	req := struct {
-		Email           string `json:"email" validate:"required"`
-		Password        string `json:"password" validate:"required,min=3,max=10"`
-		PasswordConfirm string `json:"passwordConfirm" validate:"required,min=3,max=10"`
-		Username        string `json:"username" validate:"required"`
-	}{}
+// @Router      /user/signup [post]
+func (ctrl *usersController) SignUp(c *fiber.Ctx) error {
+	var dto usersdto.CreateUserDTO
 	// body parser
-	if err := c.BodyParser(&req); err != nil {
+	if err := c.BodyParser(&dto); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// validate
-	if errors := validator.New().StructCtx(c.Context(), req); errors != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(errors.Error())
+	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 	// compare "Password" to "PasswordConfirm"
-	if req.Password != req.PasswordConfirm {
-		return fiber.ErrBadRequest
+	if dto.Password != dto.PasswordConfirm {
+		return fiber.NewError(fiber.StatusBadRequest, "password not equal passwordConfirm")
 	}
 	// hash password
-	hashPassword, err := password.HashPassword(req.Password)
+	hash, err := ctrl.authService.HashPassword(dto.Password)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 	// check the exist user
-	exist, err := database.Ent().User.
-		Query().
-		Where(user.EmailContains(req.Email)).
-		Exist(c.Context())
-	if err != nil || exist {
+	if _, err := ctrl.userService.FindByEmail(c.Context(), dto.Email); err != nil {
 		return fiber.ErrConflict
 	}
 	// register in database
-	_, err = database.Ent().User.
-		Create().
-		SetUsername(req.Username).
-		SetPassword(hashPassword).
-		SetEmail(req.Email).
-		Save(c.Context())
-	if err != nil {
+	if _, err := ctrl.userService.SaveUser(c.Context(), dto.Name, dto.Email, hash); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	return c.SendStatus(http.StatusOK)
 }
 
 // Login        godoc
-// @Summary     Get books array
+// @Summary     login jwt users
 // @Description Responds with the list of all books as JSON.
 // @Tags        auth
 // @Produce     json
 // @Success     200
 // @Router      /auth/login [post]
-func (ctrl *authController) Login(c *fiber.Ctx) error {
-	req := struct {
-		Email    string `json:"email" validate:"required"`
-		Password string `json:"password" validate:"required,min=3,max=10"`
-	}{}
+func (ctrl *usersController) Login(c *fiber.Ctx) error {
+	var dto usersdto.UserLoginDTO
 	// body parser
-	if err := c.BodyParser(&req); err != nil {
+	if err := c.BodyParser(&dto); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// validate request message
-	if err := validator.New().StructCtx(c.Context(), req); err != nil {
+	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
 		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 	// check exist user from database
-	user, err := database.Ent().User.
-		Query().
-		Where(user.EmailContains(req.Email)).
-		Only(c.Context())
+	user, err := ctrl.userService.FindByEmail(c.Context(), dto.Email)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// verify password
-	ok, err := password.CompareHashPassword(user.Password, req.Password)
+	ok, err := ctrl.authService.CompareHashPassword(user.Password, dto.Password)
 	if err != nil || !ok {
 		return fiber.ErrUnauthorized
 	}
-	// create token
-	token, err := jwt.CreateToken(user.ID)
+	// save jwt auth
+	token, err := ctrl.authService.Login(user.ID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
-	}
-	// save the redis
-	if err := jwt.SaveTokenData(user.ID, token); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 	// response token data
-	return c.JSON(fiber.Map{
-		"access_token":  token.AccessToken,
-		"refresh_token": token.RefreshToken,
-	})
+	return c.JSON(token)
 }
 
 // Check        godoc
@@ -145,7 +120,7 @@ func (ctrl *authController) Login(c *fiber.Ctx) error {
 // @Produce     json
 // @Success     200
 // @Router      /auth/check [get]
-func (ctrl *authController) Check(c *fiber.Ctx) error {
+func (ctrl *usersController) Check(c *fiber.Ctx) error {
 	userID := c.UserContext().Value("user_id").(int)
 	if userID == 0 {
 		return fiber.ErrBadRequest
@@ -160,7 +135,7 @@ func (ctrl *authController) Check(c *fiber.Ctx) error {
 // @Accept  json
 // @Produce  json
 // @Router /auth/login [post]
-func (ctrl *authController) Logout(c *fiber.Ctx) error {
+func (ctrl *usersController) Logout(c *fiber.Ctx) error {
 	// get token metadata
 	accessUser, err := jwt.ExtractTokenMetadata(c)
 	if err != nil {
@@ -181,7 +156,7 @@ func (ctrl *authController) Logout(c *fiber.Ctx) error {
 // @Produce     json
 // @Success     200
 // @Router      /auth/refresh [post]
-func (ctrl *authController) Refresh(c *fiber.Ctx) error {
+func (ctrl *usersController) Refresh(c *fiber.Ctx) error {
 	req := struct {
 		RefreshToken string `json:"refresh_token" validate:"required"`
 	}{}

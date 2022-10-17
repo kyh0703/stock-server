@@ -50,7 +50,8 @@ func main() {
 	defer rc.Close()
 
 	// create fiber app
-	app := routes.New()
+	app := routes.SetUpRouter()
+
 	// initializing the server in goroutine so that
 	// it won't block the graceful shutdown handling below
 	go func() {

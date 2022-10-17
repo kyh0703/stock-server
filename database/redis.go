@@ -1,30 +1,21 @@
 package database
 
 import (
-	"sync"
-
 	"github.com/go-redis/redis"
 )
 
-var (
-	rc *redis.Client
-	ro sync.Once
-)
-
-func Redis() *redis.Client {
-	return rc
-}
+var Redis *redis.Client
 
 func ConnectRedis() (*redis.Client, error) {
 	var err error
-	ro.Do(func() {
-		rc = redis.NewClient(&redis.Options{
-			Addr: "localhost:6379",
-		})
-		_, err := rc.Ping().Result()
-		if err != nil {
-			return
-		}
+	// create new client
+	Redis = redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
 	})
-	return rc, err
+	// ping test
+	_, err = Redis.Ping().Result()
+	if err != nil {
+		return nil, err
+	}
+	return Redis, err
 }

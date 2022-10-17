@@ -12,7 +12,6 @@ var Env Environment
 
 type Environment struct {
 	// App
-	Mode             string        `env:"GIN_MODE" envDefault:"debug"`
 	Port             string        `env:"APP_PORT" envDefault:"8000"`
 	AccessSecretKey  string        `env:"ACCESS_SECRET_KEY" envDefault:"secret"`
 	RefreshSecretKey string        `env:"REFRESH_SECRET_KEY" envDefault:"refresh"`
@@ -28,12 +27,17 @@ type Environment struct {
 }
 
 func init() {
-	godotenv.Load(".env")
+	godotenv.Load("./env/.development.env")
 	env.Parse(&Env)
+	PrintEnvironment()
+}
+
+func PrintEnvironment() {
+	log.Println()
+	log.Println("────────────────────────────────────")
 	log.Println("Environment")
 	log.Println("────────────────────────────────────")
 	log.Println("[APP]")
-	log.Println("GIN_MODE            = ", Env.Mode)
 	log.Println("APP_PORT            = ", Env.Port)
 	log.Println("────────────────────────────────────")
 	log.Println("[DATABASE]")

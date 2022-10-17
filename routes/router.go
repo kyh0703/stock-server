@@ -9,10 +9,14 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
 	"github.com/kyh0703/stock-server/config"
-	v1 "github.com/kyh0703/stock-server/routes/v1"
+	"github.com/kyh0703/stock-server/routes/posts"
+	"github.com/kyh0703/stock-server/routes/users"
+	"github.com/kyh0703/stock-server/types"
 )
 
-func New() *fiber.App {
+var module types.Module
+
+func SetUpRouter() *fiber.App {
 	// create app
 	app := fiber.New(config.Fiber(false))
 
@@ -27,12 +31,11 @@ func New() *fiber.App {
 	// swagger
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
-	// routes
-	api := app.Group("/api")
-	v1api := api.Group("v1")
-	{
-		v1.NewAuthController(v1api).Index()
-		v1.NewPostController(v1api).Index()
-	}
+	// set fiber engine
+	module.SetEngine(app)
+
+	// controller
+	module.AttachController(users.NewUsersController(app))
+	module.AttachController(posts.NewPostController(app))
 	return app
 }

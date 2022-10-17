@@ -73,14 +73,14 @@ func SaveTokenData(userID int, token *TokenMetaData) error {
 		rt  = time.Unix(token.RefreshTokenExpires, 0)
 		now = time.Now()
 	)
-	if err := database.Redis().Set(
+	if err := database.Redis.Set(
 		token.AccessUUID,
 		strconv.Itoa(userID),
 		at.Sub(now)).
 		Err(); err != nil {
 		return err
 	}
-	if err := database.Redis().Set(
+	if err := database.Redis.Set(
 		token.RefreshUUID,
 		strconv.Itoa(userID),
 		rt.Sub(now)).
@@ -91,7 +91,7 @@ func SaveTokenData(userID int, token *TokenMetaData) error {
 }
 
 func DeleteTokenData(UUID string) (int64, error) {
-	deleted, err := database.Redis().Del(UUID).Result()
+	deleted, err := database.Redis.Del(UUID).Result()
 	if err != nil {
 		return 0, err
 	}
@@ -99,7 +99,7 @@ func DeleteTokenData(UUID string) (int64, error) {
 }
 
 func GetUserIDFromRedis(UUID string) (uint64, error) {
-	id, err := database.Redis().Get(UUID).Result()
+	id, err := database.Redis.Get(UUID).Result()
 	if err != nil {
 		return 0, err
 	}
