@@ -18,7 +18,7 @@ type usersController struct {
 
 func NewUsersController() *usersController {
 	return &usersController{
-		path: "user",
+		path: "users",
 	}
 }
 
@@ -40,29 +40,29 @@ func (ctrl *usersController) Routes(router fiber.Router) {
 // @Tags        auth
 // @Produce     json
 // @Success     200
-// @Router      /user/signup [post]
+// @Router      /users/signup [post]
 func (ctrl *usersController) SignUp(c *fiber.Ctx) error {
-	var dto usersdto.CreateUserDTO
 	// body parser
+	var dto usersdto.CreateUserDTO
 	if err := c.BodyParser(&dto); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// validate
 	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		return c.Status(fiber.StatusBadGateway).SendString(err.Error())
 	}
 	// compare "Password" to "PasswordConfirm"
 	if dto.Password != dto.PasswordConfirm {
-		return fiber.NewError(fiber.StatusBadRequest, "password not equal passwordConfirm")
+		return c.Status(fiber.StatusBadRequest).SendString("password not equal confirm")
 	}
 	// hash password
 	hash, err := ctrl.authService.HashPassword(dto.Password)
 	if err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 	// check the exist user
 	if _, err := ctrl.userService.FindByEmail(c.Context(), dto.Email); err != nil {
-		return fiber.ErrConflict
+		return c.Status(fiber.StatusConflict).SendString(err.Error())
 	}
 	// register in database
 	if _, err := ctrl.userService.SaveUser(c.Context(), dto.Name, dto.Email, hash); err != nil {
@@ -77,7 +77,7 @@ func (ctrl *usersController) SignUp(c *fiber.Ctx) error {
 // @Tags        auth
 // @Produce     json
 // @Success     200
-// @Router      /user/login [post]
+// @Router      /users/login [post]
 func (ctrl *usersController) Login(c *fiber.Ctx) error {
 	var dto usersdto.UserLoginDTO
 	// body parser
@@ -101,7 +101,7 @@ func (ctrl *usersController) Login(c *fiber.Ctx) error {
 	// save jwt auth
 	token, err := ctrl.authService.Login(user.ID)
 	if err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 	// response token data
 	return c.JSON(token)
@@ -113,7 +113,7 @@ func (ctrl *usersController) Login(c *fiber.Ctx) error {
 // @Tags        auth
 // @Produce     json
 // @Success     200
-// @Router      /user/check [get]
+// @Router      /users/check [get]
 func (ctrl *usersController) Check(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
@@ -124,11 +124,11 @@ func (ctrl *usersController) Check(c *fiber.Ctx) error {
 // @ID          get-string-by-int
 // @Accept      json
 // @Produce     json
-// @Router      /user/logout [post]
+// @Router      /users/logout [post]
 func (ctrl *usersController) Logout(c *fiber.Ctx) error {
 	token := c.UserContext().Value("token").(string)
 	if err := ctrl.authService.Logout(token); err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 	return c.SendStatus(http.StatusNoContent)
 }
@@ -139,7 +139,7 @@ func (ctrl *usersController) Logout(c *fiber.Ctx) error {
 // @Tags        auth
 // @Produce     json
 // @Success     200
-// @Router      /user/refresh [post]
+// @Router      /users/refresh [post]
 func (ctrl *usersController) Refresh(c *fiber.Ctx) error {
 	var dto usersdto.RefreshTokenDTO
 	// body parser
@@ -152,7 +152,7 @@ func (ctrl *usersController) Refresh(c *fiber.Ctx) error {
 	}
 	token, err := ctrl.authService.Refresh(dto.RefreshToken)
 	if err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 	return c.JSON(token)
 }

@@ -17,7 +17,7 @@ type postController struct {
 
 func NewPostController() *postController {
 	return &postController{
-		path: "post",
+		path: "posts",
 	}
 }
 
@@ -31,44 +31,40 @@ func (ctrl *postController) Routes(router fiber.Router) {
 	router.Post("/write", middleware.TokenAuth(), ctrl.Write)
 }
 
-// Register     godoc
+// Write        godoc
 // @Summary     register auth info
 // @Description register stock api
 // @Tags        auth
 // @Produce     json
 // @Success     200
-// @Router      /auth/register [post]
+// @Router      /posts/write [post]
 func (ctrl *postController) Write(c *fiber.Ctx) error {
-	var dto postsdto.CreatePostDTO
 	// body parser
+	var dto postsdto.CreatePostDTO
 	if err := c.BodyParser(&dto); err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		return fiber.DefaultErrorHandler(c, err)
 	}
 	// validate request message
 	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
-		return fiber.NewError(fiber.StatusUnauthorized, err.Error())
+		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 	// set user id
-	userId := c.UserContext().Value("user_id").(int)
-	if userId == 0 {
-		return fiber.NewError(fiber.StatusBadRequest, "user id dose not exist")
-	}
-	dto.UserID = userId
+	dto.UserID = c.UserContext().Value("user_id").(int)
 	// save the database
 	post, err := ctrl.postsService.SavePost(c.Context(), dto)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
 	}
 	return c.Status(fiber.StatusOK).JSON(post)
 }
 
-// Register     godoc
+// List         godoc
 // @Summary     register auth info
 // @Description register stock api
 // @Tags        auth
 // @Produce     json
 // @Success     200
-// @Router      /auth/register [post]
+// @Router      /posts [get]
 func (ctrl *postController) List(c *fiber.Ctx) error {
 	// get query data
 	var (
@@ -95,13 +91,13 @@ func (ctrl *postController) List(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(posts)
 }
 
-// Register     godoc
+// GetPostById  godoc
 // @Summary     register auth info
 // @Description register stock api
 // @Tags        auth
 // @Produce     json
 // @Success     200
-// @Router      /auth/register [post]
+// @Router      /posts/:id [post]
 func (ctrl *postController) GetPostById(c *fiber.Ctx) error {
 	// validate
 	postId, err := c.ParamsInt("id", 0)
