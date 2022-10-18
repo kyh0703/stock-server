@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
 	"github.com/kyh0703/stock-server/config"
+	"github.com/kyh0703/stock-server/middleware"
 	"github.com/kyh0703/stock-server/routes/posts"
 	"github.com/kyh0703/stock-server/routes/users"
 	"github.com/kyh0703/stock-server/types"
@@ -21,6 +22,7 @@ func SetUpRouter() *fiber.App {
 	app := fiber.New(config.Fiber(false))
 
 	// middleware
+	app.Use(middleware.SetUserContext())
 	app.Use(cors.New())
 	app.Use(recover.New())
 	app.Use(logger.New(config.Logger()))
@@ -35,7 +37,8 @@ func SetUpRouter() *fiber.App {
 	module.SetEngine(app)
 
 	// controller
-	module.AttachController(users.NewUsersController(app))
-	module.AttachController(posts.NewPostController(app))
+	module.AttachController(users.NewUsersController())
+	module.AttachController(posts.NewPostController())
+	module.Init()
 	return app
 }

@@ -1,8 +1,6 @@
 package types
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -20,7 +18,9 @@ func (m *Module) AttachController(ctrl Controller) {
 }
 
 func (m *Module) Init() {
-	for ctrl := range m.controllers {
-		fmt.Println(ctrl.Path())
+	for _, controller := range m.controllers {
+		prefix := "/" + controller.Path()
+		router := m.engine.Group(prefix)
+		controller.Routes(router)
 	}
 }

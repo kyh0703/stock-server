@@ -12,14 +12,12 @@ import (
 
 type postController struct {
 	path         string
-	router       fiber.Router
 	postsService postsService
 }
 
-func NewPostController(router fiber.Router) *postController {
+func NewPostController() *postController {
 	return &postController{
-		path:   "post",
-		router: router,
+		path: "post",
 	}
 }
 
@@ -27,10 +25,10 @@ func (ctrl *postController) Path() string {
 	return ctrl.path
 }
 
-func (ctrl *postController) Routes() {
-	ctrl.router.Get("/", ctrl.List)
-	ctrl.router.Get("/:id", ctrl.GetPostById)
-	ctrl.router.Post("/write", middleware.TokenAuth(), ctrl.Write)
+func (ctrl *postController) Routes(router fiber.Router) {
+	router.Get("/", ctrl.List)
+	router.Get("/:id", ctrl.GetPostById)
+	router.Post("/write", middleware.TokenAuth(), ctrl.Write)
 }
 
 // Register     godoc

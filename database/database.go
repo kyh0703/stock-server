@@ -18,7 +18,7 @@ func ConnectDb(ctx context.Context) (*ent.Client, error) {
 	// create ent client
 	Ent, err = ent.Open(
 		dialect.MySQL,
-		"root:dnflth@tcp(localhost:3306)/stock?parseTime=true",
+		"root:1234@tcp(localhost:3306)/stock?parseTime=true",
 	)
 	if err != nil {
 		return nil, err
