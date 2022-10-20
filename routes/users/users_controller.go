@@ -65,7 +65,7 @@ func (ctrl *usersController) SignUp(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusConflict).SendString(err.Error())
 	}
 	// register in database
-	if _, err := ctrl.userService.SaveUser(c.Context(), dto.Name, dto.Email, hash); err != nil {
+	if _, err := ctrl.userService.SaveUser(c.Context(), dto.Username, dto.Email, hash); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	return c.SendStatus(http.StatusOK)
