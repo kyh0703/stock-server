@@ -18,9 +18,10 @@ func (m *Module) AttachController(ctrl Controller) {
 }
 
 func (m *Module) Init() {
+	api := m.engine.Group("/api")
 	for _, controller := range m.controllers {
 		prefix := "/" + controller.Path()
-		router := m.engine.Group(prefix)
+		router := api.Group(prefix)
 		controller.Routes(router)
 	}
 }

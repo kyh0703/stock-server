@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 
-	"entgo.io/ent/dialect"
+	"github.com/kyh0703/stock-server/config"
 	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/migrate"
 
@@ -16,10 +16,7 @@ var Ent *ent.Client
 func ConnectDb(ctx context.Context) (*ent.Client, error) {
 	var err error
 	// create ent client
-	Ent, err = ent.Open(
-		dialect.MySQL,
-		"root:1234@tcp(localhost:3306)/stock?parseTime=true",
-	)
+	Ent, err = ent.Open(config.Env.DBType, config.Env.DBUrl)
 	if err != nil {
 		return nil, err
 	}

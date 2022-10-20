@@ -27,7 +27,7 @@ func (svc *postsService) SavePost(ctx context.Context, dto postsdto.CreatePostDT
 func (svc *postsService) FindOne(ctx context.Context, id int) (*ent.Post, error) {
 	return database.Ent.Post.
 		Query().
-		Select(post.FieldID, post.FieldTitle, post.FieldBody, post.FieldTags).
+		Select(post.FieldID, post.FieldTitle, post.FieldBody, post.FieldTags, post.FieldPublishAt).
 		Where(post.ID(id)).
 		Only(ctx)
 }
@@ -35,6 +35,7 @@ func (svc *postsService) FindOne(ctx context.Context, id int) (*ent.Post, error)
 func (svc *postsService) FindPagesByNameOrTag(ctx context.Context, tag, name string, page, limit int) ([]*ent.Post, error) {
 	return database.Ent.Post.
 		Query().
+		Select(post.FieldID, post.FieldTitle, post.FieldBody, post.FieldTags, post.FieldPublishAt).
 		Limit(limit).
 		Offset((page - 1) * limit).
 		Where(
