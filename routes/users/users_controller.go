@@ -49,7 +49,7 @@ func (ctrl *usersController) SignUp(c *fiber.Ctx) error {
 	}
 	// validate
 	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
-		return c.Status(fiber.StatusBadGateway).SendString(err.Error())
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	// compare "Password" to "PasswordConfirm"
 	if dto.Password != dto.PasswordConfirm {
@@ -61,8 +61,13 @@ func (ctrl *usersController) SignUp(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 	// check the exist user
-	if _, err := ctrl.userService.FindByEmail(c.Context(), dto.Email); err != nil {
-		return c.Status(fiber.StatusConflict).SendString(err.Error())
+	exist, err := ctrl.userService.IsExistEmail(c.Context(), dto.Email)
+	if err != nil || exist {
+		if exist {
+			return fiber.NewError(fiber.StatusConflict, "사용자가 이미 존재합니다")
+		} else {
+			return fiber.NewError(fiber.StatusConflict, "잠시후 다시 이용하여 주시기 바랍니다")l
+		}
 	}
 	// register in database
 	if _, err := ctrl.userService.SaveUser(c.Context(), dto.Username, dto.Email, hash); err != nil {
@@ -103,8 +108,17 @@ func (ctrl *usersController) Login(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
+	// set cookie data
+	cookie := new(fiber.Cookie)
+	cookie.Name = "access_token"
+	cookie.Value = token.AccessToken
+	cookie.HTTPOnly = true
+	c.Cookie(cookie)
 	// response token data
-	return c.JSON(token)
+	return c.JSON(fiber.Map{
+		"user":         user.Email,
+		"access_token": token.AccessToken,
+	})
 }
 
 // Check        godoc

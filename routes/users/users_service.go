@@ -71,3 +71,10 @@ func (svc *UsersService) FindByEmail(ctx context.Context, email string) (*ent.Us
 		Where(user.Email(email)).
 		Only(ctx)
 }
+
+func (svc *UsersService) IsExistEmail(ctx context.Context, email string) (bool, error) {
+	return database.Ent.User.
+		Query().
+		Where(user.Email(email)).
+		Exist(ctx)
+}

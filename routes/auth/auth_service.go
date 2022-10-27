@@ -22,6 +22,11 @@ type TokenMetaData struct {
 	RefreshTokenExpires int64
 }
 
+type TokenData struct {
+	AccessToken  string
+	RefreshToken string
+}
+
 type AuthService struct{}
 
 func NewAuthService() *AuthService {
@@ -46,7 +51,7 @@ func (svc *AuthService) CompareHashPassword(hash, password string) (bool, error)
 	return true, nil
 }
 
-func (svc *AuthService) Login(id int) (map[string]string, error) {
+func (svc *AuthService) Login(id int) (*TokenData, error) {
 	// create token
 	token, err := svc.generateToken(id)
 	if err != nil {
@@ -56,9 +61,9 @@ func (svc *AuthService) Login(id int) (map[string]string, error) {
 	if err := svc.saveToken(id, token); err != nil {
 		return nil, err
 	}
-	return map[string]string{
-		"access_token":  token.AccessToken,
-		"refresh_token": token.RefreshToken,
+	return &TokenData{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
 	}, nil
 }
 
@@ -73,7 +78,7 @@ func (svc *AuthService) Logout(jwtString string) error {
 	return nil
 }
 
-func (svc *AuthService) Refresh(jwtString string) (map[string]string, error) {
+func (svc *AuthService) Refresh(jwtString string) (*TokenData, error) {
 	uuid, err := svc.getUUIDByRefreshToken(jwtString)
 	if err != nil {
 		return nil, err
@@ -89,7 +94,10 @@ func (svc *AuthService) Refresh(jwtString string) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return token, nil
+	return &TokenData{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+	}, nil
 }
 
 func (svc *AuthService) FindUserIDByUUID(UUID string) (int, error) {
