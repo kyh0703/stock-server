@@ -8,6 +8,7 @@ import (
 	"github.com/kyh0703/stock-server/middleware"
 	"github.com/kyh0703/stock-server/routes/auth"
 	usersdto "github.com/kyh0703/stock-server/routes/users/dto"
+	"github.com/kyh0703/stock-server/types"
 )
 
 type usersController struct {
@@ -45,34 +46,40 @@ func (ctrl *usersController) SignUp(c *fiber.Ctx) error {
 	// body parser
 	var dto usersdto.CreateUserDTO
 	if err := c.BodyParser(&dto); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
+
 	// validate
 	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
+
 	// compare "Password" to "PasswordConfirm"
 	if dto.Password != dto.PasswordConfirm {
-		return c.Status(fiber.StatusBadRequest).SendString("password not equal confirm")
+		return c.App().ErrorHandler(c, types.ErrPasswordNotCompareConfirm)
 	}
+
 	// hash password
 	hash, err := ctrl.authService.HashPassword(dto.Password)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
+
 	// check the exist user
 	exist, err := ctrl.userService.IsExistEmail(c.Context(), dto.Email)
 	if err != nil || exist {
 		if exist {
-			return fiber.NewError(fiber.StatusConflict, "사용자가 이미 존재합니다")
+			return c.App().ErrorHandler(c, types.ErrUserExist)
 		} else {
-			return fiber.NewError(fiber.StatusConflict, "잠시후 다시 이용하여 주시기 바랍니다")l
+			return c.App().ErrorHandler(c, types.ErrServerInternal)
 		}
 	}
+
 	// register in database
 	if _, err := ctrl.userService.SaveUser(c.Context(), dto.Username, dto.Email, hash); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
+
 	return c.SendStatus(http.StatusOK)
 }
 
@@ -84,36 +91,42 @@ func (ctrl *usersController) SignUp(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /users/login [post]
 func (ctrl *usersController) Login(c *fiber.Ctx) error {
-	var dto usersdto.UserLoginDTO
 	// body parser
+	var dto usersdto.UserLoginDTO
 	if err := c.BodyParser(&dto); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
+
 	// validate request message
 	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
-		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
+		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
+
 	// check exist user from database
 	user, err := ctrl.userService.FindByEmail(c.Context(), dto.Email)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.App().ErrorHandler(c, types.ErrUserNotExist)
 	}
+
 	// verify password
 	ok, err := ctrl.authService.CompareHashPassword(user.Password, dto.Password)
 	if err != nil || !ok {
-		return fiber.ErrUnauthorized
+		return c.App().ErrorHandler(c, types.ErrPasswordInvalid)
 	}
+
 	// save jwt auth
 	token, err := ctrl.authService.Login(user.ID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
+
 	// set cookie data
 	cookie := new(fiber.Cookie)
 	cookie.Name = "access_token"
 	cookie.Value = token.AccessToken
 	cookie.HTTPOnly = true
 	c.Cookie(cookie)
+
 	// response token data
 	return c.JSON(fiber.Map{
 		"user":         user.Email,
@@ -142,7 +155,7 @@ func (ctrl *usersController) Check(c *fiber.Ctx) error {
 func (ctrl *usersController) Logout(c *fiber.Ctx) error {
 	token := c.UserContext().Value("token").(string)
 	if err := ctrl.authService.Logout(token); err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 	return c.SendStatus(http.StatusNoContent)
 }
@@ -155,18 +168,21 @@ func (ctrl *usersController) Logout(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /users/refresh [post]
 func (ctrl *usersController) Refresh(c *fiber.Ctx) error {
-	var dto usersdto.RefreshTokenDTO
 	// body parser
+	var dto usersdto.RefreshTokenDTO
 	if err := c.BodyParser(&dto); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.App().ErrorHandler(c, fiber.ErrBadRequest)
 	}
+
 	// validate request message
 	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
-		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
+		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
+
 	token, err := ctrl.authService.Refresh(dto.RefreshToken)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
+
 	return c.JSON(token)
 }
