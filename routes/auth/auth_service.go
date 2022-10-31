@@ -22,11 +22,6 @@ type TokenMetaData struct {
 	RefreshTokenExpires int64
 }
 
-type TokenData struct {
-	AccessToken  string
-	RefreshToken string
-}
-
 type AuthService struct{}
 
 func NewAuthService() *AuthService {
@@ -51,7 +46,7 @@ func (svc *AuthService) CompareHashPassword(hash, password string) (bool, error)
 	return true, nil
 }
 
-func (svc *AuthService) Login(id int) (*TokenData, error) {
+func (svc *AuthService) Login(id int) (*TokenMetaData, error) {
 	// create token
 	token, err := svc.generateToken(id)
 	if err != nil {
@@ -61,10 +56,7 @@ func (svc *AuthService) Login(id int) (*TokenData, error) {
 	if err := svc.saveToken(id, token); err != nil {
 		return nil, err
 	}
-	return &TokenData{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-	}, nil
+	return token, nil
 }
 
 func (svc *AuthService) Logout(jwtString string) error {
@@ -78,7 +70,7 @@ func (svc *AuthService) Logout(jwtString string) error {
 	return nil
 }
 
-func (svc *AuthService) Refresh(jwtString string) (*TokenData, error) {
+func (svc *AuthService) Refresh(jwtString string) (*TokenMetaData, error) {
 	uuid, err := svc.getUUIDByRefreshToken(jwtString)
 	if err != nil {
 		return nil, err
@@ -94,10 +86,7 @@ func (svc *AuthService) Refresh(jwtString string) (*TokenData, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &TokenData{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-	}, nil
+	return token, nil
 }
 
 func (svc *AuthService) FindUserIDByUUID(UUID string) (int, error) {
@@ -169,32 +158,33 @@ func (svc *AuthService) generateRefreshToken(id int, UUID string, expire int64) 
 }
 
 func (svc *AuthService) generateToken(userID int) (*TokenMetaData, error) {
-	// Create access token metadata
-	t := new(TokenMetaData)
-	t.AccessTokenExpires = time.Now().Add(time.Minute * 15).Unix()
-	t.AccessUUID = uuid.NewString()
+	// Create access token metadata with expire 30min
+	tokenMeta := new(TokenMetaData)
+	tokenMeta.AccessTokenExpires = time.Now().Add(time.Minute * 30).Unix()
+	tokenMeta.AccessUUID = uuid.NewString()
 	accessToken, err := svc.generateAccessToken(
 		userID,
-		t.AccessUUID,
-		t.AccessTokenExpires,
+		tokenMeta.AccessUUID,
+		tokenMeta.AccessTokenExpires,
 	)
 	if err != nil {
 		return nil, err
 	}
-	t.AccessToken = accessToken
-	// Create refresh token metadata
-	t.RefreshTokenExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
-	t.RefreshUUID = uuid.NewString()
+	tokenMeta.AccessToken = accessToken
+
+	// Create refresh token metadata with expire 7day
+	tokenMeta.RefreshTokenExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+	tokenMeta.RefreshUUID = uuid.NewString()
 	refreshToken, err := svc.generateRefreshToken(
 		userID,
-		t.RefreshUUID,
-		t.RefreshTokenExpires,
+		tokenMeta.RefreshUUID,
+		tokenMeta.RefreshTokenExpires,
 	)
 	if err != nil {
 		return nil, err
 	}
-	t.RefreshToken = refreshToken
-	return t, nil
+	tokenMeta.RefreshToken = refreshToken
+	return tokenMeta, nil
 }
 
 func (svc *AuthService) saveToken(userID int, token *TokenMetaData) error {

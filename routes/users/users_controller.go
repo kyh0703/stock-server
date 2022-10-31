@@ -28,9 +28,9 @@ func (ctrl *usersController) Path() string {
 }
 
 func (ctrl *usersController) Routes(router fiber.Router) {
-	router.Post("/signup", ctrl.SignUp)
+	router.Post("/register", ctrl.Register)
 	router.Post("/login", ctrl.Login)
-	router.Get("/check", middleware.TokenAuth(), ctrl.Check)
+	router.Get("/profile", middleware.TokenAuth(), ctrl.Profile)
 	router.Post("/logout", middleware.TokenAuth(), ctrl.Logout)
 	router.Post("/refresh", ctrl.Refresh)
 }
@@ -41,32 +41,36 @@ func (ctrl *usersController) Routes(router fiber.Router) {
 // @Tags        auth
 // @Produce     json
 // @Success     200
-// @Router      /users/signup [post]
-func (ctrl *usersController) SignUp(c *fiber.Ctx) error {
+// @Router      /users/register [post]
+func (ctrl *usersController) Register(c *fiber.Ctx) error {
+	var (
+		req usersdto.UserRegisterRequest
+		res usersdto.UserRegisterResponse
+	)
+
 	// body parser
-	var dto usersdto.CreateUserDTO
-	if err := c.BodyParser(&dto); err != nil {
+	if err := c.BodyParser(&req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
 	// validate
-	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
+	if err := validator.New().StructCtx(c.Context(), res); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	// compare "Password" to "PasswordConfirm"
-	if dto.Password != dto.PasswordConfirm {
+	if req.Password != req.PasswordConfirm {
 		return c.App().ErrorHandler(c, types.ErrPasswordNotCompareConfirm)
 	}
 
 	// hash password
-	hash, err := ctrl.authService.HashPassword(dto.Password)
+	hash, err := ctrl.authService.HashPassword(req.Password)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 
 	// check the exist user
-	exist, err := ctrl.userService.IsExistEmail(c.Context(), dto.Email)
+	exist, err := ctrl.userService.IsExistEmail(c.Context(), req.Email)
 	if err != nil || exist {
 		if exist {
 			return c.App().ErrorHandler(c, types.ErrUserExist)
@@ -76,11 +80,12 @@ func (ctrl *usersController) SignUp(c *fiber.Ctx) error {
 	}
 
 	// register in database
-	if _, err := ctrl.userService.SaveUser(c.Context(), dto.Username, dto.Email, hash); err != nil {
+	if _, err := ctrl.userService.SaveUser(c.Context(), req.Username, req.Email, hash); err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 
-	return c.SendStatus(http.StatusOK)
+	// response token data
+	return c.JSON(res)
 }
 
 // Login        godoc
@@ -91,25 +96,29 @@ func (ctrl *usersController) SignUp(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /users/login [post]
 func (ctrl *usersController) Login(c *fiber.Ctx) error {
+	var (
+		req usersdto.UserLoginRequest
+		res usersdto.UserLoginResponse
+	)
+
 	// body parser
-	var dto usersdto.UserLoginDTO
-	if err := c.BodyParser(&dto); err != nil {
+	if err := c.BodyParser(&req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
 	// validate request message
-	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
+	if err := validator.New().StructCtx(c.Context(), req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
 	// check exist user from database
-	user, err := ctrl.userService.FindByEmail(c.Context(), dto.Email)
+	user, err := ctrl.userService.FindByEmail(c.Context(), req.Email)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrUserNotExist)
 	}
 
 	// verify password
-	ok, err := ctrl.authService.CompareHashPassword(user.Password, dto.Password)
+	ok, err := ctrl.authService.CompareHashPassword(user.Password, req.Password)
 	if err != nil || !ok {
 		return c.App().ErrorHandler(c, types.ErrPasswordInvalid)
 	}
@@ -120,18 +129,21 @@ func (ctrl *usersController) Login(c *fiber.Ctx) error {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 
-	// set cookie data
+	// set refresh token in cookie
 	cookie := new(fiber.Cookie)
-	cookie.Name = "access_token"
-	cookie.Value = token.AccessToken
+	cookie.Name = "token"
+	cookie.Value = token.RefreshToken
 	cookie.HTTPOnly = true
+	cookie.Secure = true
 	c.Cookie(cookie)
 
 	// response token data
-	return c.JSON(fiber.Map{
-		"user":         user.Email,
-		"access_token": token.AccessToken,
-	})
+	res.ID = user.ID
+	res.Email = user.Email
+	res.Username = user.Username
+	res.AccessToken = token.AccessToken
+	res.AccessTokenExpires = token.AccessTokenExpires
+	return c.JSON(res)
 }
 
 // Check        godoc
@@ -140,9 +152,21 @@ func (ctrl *usersController) Login(c *fiber.Ctx) error {
 // @Tags        auth
 // @Produce     json
 // @Success     200
-// @Router      /users/check [get]
-func (ctrl *usersController) Check(c *fiber.Ctx) error {
-	return c.SendStatus(fiber.StatusOK)
+// @Router      /users/profile [get]
+func (ctrl *usersController) Profile(c *fiber.Ctx) error {
+	var (
+		userId int
+		res    usersdto.UserProfileResponse
+	)
+	userId = c.UserContext().Value(ContextKeyUserID).(int)
+	user, err := ctrl.userService.FindOne(c.Context(), userId)
+	if err != nil {
+		return c.App().ErrorHandler(c, types.ErrUserNotExist)
+	}
+	res.ID = user.ID
+	res.Email = user.Email
+	res.Username = user.Username
+	return c.JSON(res)
 }
 
 // Logout       godoc
@@ -153,7 +177,7 @@ func (ctrl *usersController) Check(c *fiber.Ctx) error {
 // @Produce     json
 // @Router      /users/logout [post]
 func (ctrl *usersController) Logout(c *fiber.Ctx) error {
-	token := c.UserContext().Value("token").(string)
+	token := c.UserContext().Value(ContextKeyAccessToken).(string)
 	if err := ctrl.authService.Logout(token); err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
@@ -168,21 +192,27 @@ func (ctrl *usersController) Logout(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /users/refresh [post]
 func (ctrl *usersController) Refresh(c *fiber.Ctx) error {
+	var (
+		req usersdto.RefreshTokenRequest
+		res usersdto.RefreshTokenResponse
+	)
+
 	// body parser
-	var dto usersdto.RefreshTokenDTO
-	if err := c.BodyParser(&dto); err != nil {
+	if err := c.BodyParser(&req); err != nil {
 		return c.App().ErrorHandler(c, fiber.ErrBadRequest)
 	}
 
 	// validate request message
-	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
+	if err := validator.New().StructCtx(c.Context(), req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
-	token, err := ctrl.authService.Refresh(dto.RefreshToken)
+	// refresh token
+	token, err := ctrl.authService.Refresh(req.RefreshToken)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 
-	return c.JSON(token)
+	res.AccessToken = token.AccessToken
+	return c.JSON(res)
 }

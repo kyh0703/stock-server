@@ -32,6 +32,7 @@ func TokenAuth() fiber.Handler {
 			tokenString string
 			authService auth.AuthService
 		)
+
 		// Get token string
 		tokenString = c.Query("token")
 		if tokenString == "" {
@@ -45,16 +46,19 @@ func TokenAuth() fiber.Handler {
 		if tokenString == "" {
 			return fiber.NewError(fiber.StatusBadRequest, "token is invalid")
 		}
+
 		// Get access token
 		uuid, err := authService.GetUUIDByAccessToken(tokenString)
 		if err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, "token is invalid")
 		}
+
 		// Validate in redis token
 		userID, err := authService.FindUserIDByUUID(uuid)
 		if err != nil {
 			return c.Status(http.StatusUnauthorized).SendString(err.Error())
 		}
+
 		// Set token to context
 		c.SetUserContext(context.WithValue(c.UserContext(), "token", tokenString))
 		c.SetUserContext(context.WithValue(c.UserContext(), "user_id", userID))

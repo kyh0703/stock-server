@@ -34,8 +34,8 @@ func Fiber(existView bool) fiber.Config {
 		// set json data
 		c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
 		data := fiber.Map{
-			"status": code,
-			"error":  message,
+			"status":  code,
+			"message": message,
 		}
 		return c.Status(code).JSON(data)
 	}
