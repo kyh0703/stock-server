@@ -1,4 +1,4 @@
-package routes
+package main
 
 import (
 	swagger "github.com/arsmn/fiber-swagger/v2"
@@ -16,7 +16,7 @@ import (
 
 var module types.Module
 
-func SetUpRouter() *fiber.App {
+func NewApp() *fiber.App {
 	// create app
 	app := fiber.New(config.Fiber(false))
 

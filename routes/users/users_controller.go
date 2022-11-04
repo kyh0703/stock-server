@@ -158,7 +158,7 @@ func (ctrl *usersController) Profile(c *fiber.Ctx) error {
 		userId int
 		res    usersdto.UserProfileResponse
 	)
-	userId = c.UserContext().Value(ContextKeyUserID).(int)
+	userId = c.UserContext().Value("user_id").(int)
 	user, err := ctrl.userService.FindOne(c.Context(), userId)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrUserNotExist)
@@ -177,7 +177,7 @@ func (ctrl *usersController) Profile(c *fiber.Ctx) error {
 // @Produce     json
 // @Router      /users/logout [post]
 func (ctrl *usersController) Logout(c *fiber.Ctx) error {
-	token := c.UserContext().Value(ContextKeyAccessToken).(string)
+	token := c.UserContext().Value("access_token").(string)
 	if err := ctrl.authService.Logout(token); err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}

@@ -14,7 +14,7 @@ import (
 
 type postsService struct{}
 
-func (svc *postsService) SavePost(ctx context.Context, dto postsdto.CreatePostDTO) (*ent.Post, error) {
+func (svc *postsService) SavePost(ctx context.Context, dto postsdto.PostCreateRequest) (*ent.Post, error) {
 	return database.Ent.Post.
 		Create().
 		SetTitle(dto.Title).

@@ -1,9 +1,9 @@
 package dto
 
 type RefreshTokenRequest struct {
-	RefreshToken string `json:"refresh_token" validate:"require"`
+	RefreshToken string `json:"refreshToken" validate:"require"`
 }
 
 type RefreshTokenResponse struct {
-	AccessToken string `json:"access_token" validate:"require"`
+	AccessToken string `json:"accessToken" validate:"require"`
 }

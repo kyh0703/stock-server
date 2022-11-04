@@ -9,6 +9,6 @@ type UserLoginResponse struct {
 	ID                 int    `json:"id"`
 	Email              string `json:"email"`
 	Username           string `json:"username"`
-	AccessToken        string `json:"access_token"`
-	AccessTokenExpires int64  `json:"token_expire_at"`
+	AccessToken        string `json:"accessToken"`
+	AccessTokenExpires int64  `json:"accessTokenExpire"`
 }

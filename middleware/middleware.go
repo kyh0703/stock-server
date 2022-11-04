@@ -33,15 +33,14 @@ func TokenAuth() fiber.Handler {
 			authService auth.AuthService
 		)
 
-		// Get token string
-		tokenString = c.Query("token")
-		if tokenString == "" {
-			// Get header "Authorization"
-			bearerToken := c.Get("Authorization")
-			strArr := strings.Split(bearerToken, " ")
-			if len(strArr) == 2 {
-				tokenString = strArr[1]
-			}
+		// Get token string 'Header : Authorization: Bearer ${accessToken}'
+		bearerToken := c.Get("Authorization")
+		if bearerToken == "" {
+			return fiber.NewError(fiber.StatusBadRequest, "token is invalid")
+		}
+		strArr := strings.Split(bearerToken, " ")
+		if len(strArr) == 2 {
+			tokenString = strArr[1]
 		}
 		if tokenString == "" {
 			return fiber.NewError(fiber.StatusBadRequest, "token is invalid")
@@ -60,7 +59,7 @@ func TokenAuth() fiber.Handler {
 		}
 
 		// Set token to context
-		c.SetUserContext(context.WithValue(c.UserContext(), "token", tokenString))
+		c.SetUserContext(context.WithValue(c.UserContext(), "access_token", tokenString))
 		c.SetUserContext(context.WithValue(c.UserContext(), "user_id", userID))
 		return c.Next()
 	}

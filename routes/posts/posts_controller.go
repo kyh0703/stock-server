@@ -40,22 +40,23 @@ func (ctrl *postController) Routes(router fiber.Router) {
 // @Success     200
 // @Router      /posts/write [post]
 func (ctrl *postController) Write(c *fiber.Ctx) error {
+	var req postsdto.PostCreateRequest
+
 	// body parser
-	var dto postsdto.CreatePostDTO
-	if err := c.BodyParser(&dto); err != nil {
+	if err := c.BodyParser(&req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
 	// validate request message
-	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
+	if err := validator.New().StructCtx(c.Context(), req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
 	// set user id
-	dto.UserID = c.UserContext().Value("user_id").(int)
+	req.UserID = c.UserContext().Value("user_id").(int)
 
 	// save the database
-	post, err := ctrl.postsService.SavePost(c.Context(), dto)
+	post, err := ctrl.postsService.SavePost(c.Context(), req)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrUnauthorized)
 	}

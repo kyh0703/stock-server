@@ -8,5 +8,5 @@ type UserRegisterRequest struct {
 }
 
 type UserRegisterResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:"accessToken"`
 }
