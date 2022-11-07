@@ -47,13 +47,13 @@ func (pu *PostUpdate) SetTags(s []string) *PostUpdate {
 	return pu
 }
 
-// SetPublishAt sets the "publish_at" field.
+// SetPublishAt sets the "publishAt" field.
 func (pu *PostUpdate) SetPublishAt(t time.Time) *PostUpdate {
 	pu.mutation.SetPublishAt(t)
 	return pu
 }
 
-// SetNillablePublishAt sets the "publish_at" field if the given value is not nil.
+// SetNillablePublishAt sets the "publishAt" field if the given value is not nil.
 func (pu *PostUpdate) SetNillablePublishAt(t *time.Time) *PostUpdate {
 	if t != nil {
 		pu.SetPublishAt(*t)
@@ -263,13 +263,13 @@ func (puo *PostUpdateOne) SetTags(s []string) *PostUpdateOne {
 	return puo
 }
 
-// SetPublishAt sets the "publish_at" field.
+// SetPublishAt sets the "publishAt" field.
 func (puo *PostUpdateOne) SetPublishAt(t time.Time) *PostUpdateOne {
 	puo.mutation.SetPublishAt(t)
 	return puo
 }
 
-// SetNillablePublishAt sets the "publish_at" field if the given value is not nil.
+// SetNillablePublishAt sets the "publishAt" field if the given value is not nil.
 func (puo *PostUpdateOne) SetNillablePublishAt(t *time.Time) *PostUpdateOne {
 	if t != nil {
 		puo.SetPublishAt(*t)

@@ -102,14 +102,14 @@ func Password(v string) predicate.User {
 	})
 }
 
-// CreateAt applies equality check predicate on the "create_at" field. It's identical to CreateAtEQ.
+// CreateAt applies equality check predicate on the "createAt" field. It's identical to CreateAtEQ.
 func CreateAt(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldCreateAt), v))
 	})
 }
 
-// UpdateAt applies equality check predicate on the "update_at" field. It's identical to UpdateAtEQ.
+// UpdateAt applies equality check predicate on the "updateAt" field. It's identical to UpdateAtEQ.
 func UpdateAt(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUpdateAt), v))
@@ -413,21 +413,21 @@ func PasswordContainsFold(v string) predicate.User {
 	})
 }
 
-// CreateAtEQ applies the EQ predicate on the "create_at" field.
+// CreateAtEQ applies the EQ predicate on the "createAt" field.
 func CreateAtEQ(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldCreateAt), v))
 	})
 }
 
-// CreateAtNEQ applies the NEQ predicate on the "create_at" field.
+// CreateAtNEQ applies the NEQ predicate on the "createAt" field.
 func CreateAtNEQ(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldCreateAt), v))
 	})
 }
 
-// CreateAtIn applies the In predicate on the "create_at" field.
+// CreateAtIn applies the In predicate on the "createAt" field.
 func CreateAtIn(vs ...time.Time) predicate.User {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -438,7 +438,7 @@ func CreateAtIn(vs ...time.Time) predicate.User {
 	})
 }
 
-// CreateAtNotIn applies the NotIn predicate on the "create_at" field.
+// CreateAtNotIn applies the NotIn predicate on the "createAt" field.
 func CreateAtNotIn(vs ...time.Time) predicate.User {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -449,49 +449,49 @@ func CreateAtNotIn(vs ...time.Time) predicate.User {
 	})
 }
 
-// CreateAtGT applies the GT predicate on the "create_at" field.
+// CreateAtGT applies the GT predicate on the "createAt" field.
 func CreateAtGT(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldCreateAt), v))
 	})
 }
 
-// CreateAtGTE applies the GTE predicate on the "create_at" field.
+// CreateAtGTE applies the GTE predicate on the "createAt" field.
 func CreateAtGTE(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldCreateAt), v))
 	})
 }
 
-// CreateAtLT applies the LT predicate on the "create_at" field.
+// CreateAtLT applies the LT predicate on the "createAt" field.
 func CreateAtLT(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldCreateAt), v))
 	})
 }
 
-// CreateAtLTE applies the LTE predicate on the "create_at" field.
+// CreateAtLTE applies the LTE predicate on the "createAt" field.
 func CreateAtLTE(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldCreateAt), v))
 	})
 }
 
-// UpdateAtEQ applies the EQ predicate on the "update_at" field.
+// UpdateAtEQ applies the EQ predicate on the "updateAt" field.
 func UpdateAtEQ(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUpdateAt), v))
 	})
 }
 
-// UpdateAtNEQ applies the NEQ predicate on the "update_at" field.
+// UpdateAtNEQ applies the NEQ predicate on the "updateAt" field.
 func UpdateAtNEQ(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldUpdateAt), v))
 	})
 }
 
-// UpdateAtIn applies the In predicate on the "update_at" field.
+// UpdateAtIn applies the In predicate on the "updateAt" field.
 func UpdateAtIn(vs ...time.Time) predicate.User {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -502,7 +502,7 @@ func UpdateAtIn(vs ...time.Time) predicate.User {
 	})
 }
 
-// UpdateAtNotIn applies the NotIn predicate on the "update_at" field.
+// UpdateAtNotIn applies the NotIn predicate on the "updateAt" field.
 func UpdateAtNotIn(vs ...time.Time) predicate.User {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -513,28 +513,28 @@ func UpdateAtNotIn(vs ...time.Time) predicate.User {
 	})
 }
 
-// UpdateAtGT applies the GT predicate on the "update_at" field.
+// UpdateAtGT applies the GT predicate on the "updateAt" field.
 func UpdateAtGT(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldUpdateAt), v))
 	})
 }
 
-// UpdateAtGTE applies the GTE predicate on the "update_at" field.
+// UpdateAtGTE applies the GTE predicate on the "updateAt" field.
 func UpdateAtGTE(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldUpdateAt), v))
 	})
 }
 
-// UpdateAtLT applies the LT predicate on the "update_at" field.
+// UpdateAtLT applies the LT predicate on the "updateAt" field.
 func UpdateAtLT(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldUpdateAt), v))
 	})
 }
 
-// UpdateAtLTE applies the LTE predicate on the "update_at" field.
+// UpdateAtLTE applies the LTE predicate on the "updateAt" field.
 func UpdateAtLTE(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUpdateAt), v))

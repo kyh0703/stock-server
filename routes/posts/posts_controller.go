@@ -56,12 +56,7 @@ func (ctrl *postController) Write(c *fiber.Ctx) error {
 	req.UserID = c.UserContext().Value("user_id").(int)
 
 	// save the database
-	post, err := ctrl.postsService.SavePost(c.Context(), req)
-	if err != nil {
-		return c.App().ErrorHandler(c, types.ErrUnauthorized)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(post)
+	return ctrl.postsService.RegisterPost(c, req)
 }
 
 // List         godoc

@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"regexp"
 	"time"
 
 	"entgo.io/ent"
@@ -16,11 +17,21 @@ type User struct {
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("email").MaxLen(100).Unique(),
-		field.String("username").MaxLen(255),
+		field.String("email").
+			Match(regexp.MustCompile(`(?m)^[\w\.]+@[\w\.]+\.[\w]+$`)).
+			MaxLen(100).
+			Unique(),
+		field.String("username").
+			MaxLen(255),
 		field.String("password"),
-		field.Time("create_at").Default(time.Now),
-		field.Time("update_at").Default(time.Now).UpdateDefault(time.Now),
+		field.Time("createAt").
+			StorageKey("create_at").
+			Default(time.Now).
+			Immutable(),
+		field.Time("updateAt").
+			StorageKey("update_at").
+			Default(time.Now).
+			UpdateDefault(time.Now),
 	}
 }
 

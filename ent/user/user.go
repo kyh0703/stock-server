@@ -17,9 +17,9 @@ const (
 	FieldUsername = "username"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
-	// FieldCreateAt holds the string denoting the create_at field in the database.
+	// FieldCreateAt holds the string denoting the createat field in the database.
 	FieldCreateAt = "create_at"
-	// FieldUpdateAt holds the string denoting the update_at field in the database.
+	// FieldUpdateAt holds the string denoting the updateat field in the database.
 	FieldUpdateAt = "update_at"
 	// EdgePosts holds the string denoting the posts edge name in mutations.
 	EdgePosts = "posts"
@@ -59,10 +59,10 @@ var (
 	EmailValidator func(string) error
 	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	UsernameValidator func(string) error
-	// DefaultCreateAt holds the default value on creation for the "create_at" field.
+	// DefaultCreateAt holds the default value on creation for the "createAt" field.
 	DefaultCreateAt func() time.Time
-	// DefaultUpdateAt holds the default value on creation for the "update_at" field.
+	// DefaultUpdateAt holds the default value on creation for the "updateAt" field.
 	DefaultUpdateAt func() time.Time
-	// UpdateDefaultUpdateAt holds the default value on update for the "update_at" field.
+	// UpdateDefaultUpdateAt holds the default value on update for the "updateAt" field.
 	UpdateDefaultUpdateAt func() time.Time
 )

@@ -39,13 +39,13 @@ func (uc *UserCreate) SetPassword(s string) *UserCreate {
 	return uc
 }
 
-// SetCreateAt sets the "create_at" field.
+// SetCreateAt sets the "createAt" field.
 func (uc *UserCreate) SetCreateAt(t time.Time) *UserCreate {
 	uc.mutation.SetCreateAt(t)
 	return uc
 }
 
-// SetNillableCreateAt sets the "create_at" field if the given value is not nil.
+// SetNillableCreateAt sets the "createAt" field if the given value is not nil.
 func (uc *UserCreate) SetNillableCreateAt(t *time.Time) *UserCreate {
 	if t != nil {
 		uc.SetCreateAt(*t)
@@ -53,13 +53,13 @@ func (uc *UserCreate) SetNillableCreateAt(t *time.Time) *UserCreate {
 	return uc
 }
 
-// SetUpdateAt sets the "update_at" field.
+// SetUpdateAt sets the "updateAt" field.
 func (uc *UserCreate) SetUpdateAt(t time.Time) *UserCreate {
 	uc.mutation.SetUpdateAt(t)
 	return uc
 }
 
-// SetNillableUpdateAt sets the "update_at" field if the given value is not nil.
+// SetNillableUpdateAt sets the "updateAt" field if the given value is not nil.
 func (uc *UserCreate) SetNillableUpdateAt(t *time.Time) *UserCreate {
 	if t != nil {
 		uc.SetUpdateAt(*t)
@@ -191,10 +191,10 @@ func (uc *UserCreate) check() error {
 		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "User.password"`)}
 	}
 	if _, ok := uc.mutation.CreateAt(); !ok {
-		return &ValidationError{Name: "create_at", err: errors.New(`ent: missing required field "User.create_at"`)}
+		return &ValidationError{Name: "createAt", err: errors.New(`ent: missing required field "User.createAt"`)}
 	}
 	if _, ok := uc.mutation.UpdateAt(); !ok {
-		return &ValidationError{Name: "update_at", err: errors.New(`ent: missing required field "User.update_at"`)}
+		return &ValidationError{Name: "updateAt", err: errors.New(`ent: missing required field "User.updateAt"`)}
 	}
 	return nil
 }

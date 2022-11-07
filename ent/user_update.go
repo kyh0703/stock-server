@@ -47,13 +47,13 @@ func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
 	return uu
 }
 
-// SetCreateAt sets the "create_at" field.
+// SetCreateAt sets the "createAt" field.
 func (uu *UserUpdate) SetCreateAt(t time.Time) *UserUpdate {
 	uu.mutation.SetCreateAt(t)
 	return uu
 }
 
-// SetNillableCreateAt sets the "create_at" field if the given value is not nil.
+// SetNillableCreateAt sets the "createAt" field if the given value is not nil.
 func (uu *UserUpdate) SetNillableCreateAt(t *time.Time) *UserUpdate {
 	if t != nil {
 		uu.SetCreateAt(*t)
@@ -61,7 +61,7 @@ func (uu *UserUpdate) SetNillableCreateAt(t *time.Time) *UserUpdate {
 	return uu
 }
 
-// SetUpdateAt sets the "update_at" field.
+// SetUpdateAt sets the "updateAt" field.
 func (uu *UserUpdate) SetUpdateAt(t time.Time) *UserUpdate {
 	uu.mutation.SetUpdateAt(t)
 	return uu
@@ -336,13 +336,13 @@ func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
 	return uuo
 }
 
-// SetCreateAt sets the "create_at" field.
+// SetCreateAt sets the "createAt" field.
 func (uuo *UserUpdateOne) SetCreateAt(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetCreateAt(t)
 	return uuo
 }
 
-// SetNillableCreateAt sets the "create_at" field if the given value is not nil.
+// SetNillableCreateAt sets the "createAt" field if the given value is not nil.
 func (uuo *UserUpdateOne) SetNillableCreateAt(t *time.Time) *UserUpdateOne {
 	if t != nil {
 		uuo.SetCreateAt(*t)
@@ -350,7 +350,7 @@ func (uuo *UserUpdateOne) SetNillableCreateAt(t *time.Time) *UserUpdateOne {
 	return uuo
 }
 
-// SetUpdateAt sets the "update_at" field.
+// SetUpdateAt sets the "updateAt" field.
 func (uuo *UserUpdateOne) SetUpdateAt(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetUpdateAt(t)
 	return uuo

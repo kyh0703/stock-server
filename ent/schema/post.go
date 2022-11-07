@@ -19,7 +19,9 @@ func (Post) Fields() []ent.Field {
 		field.String("title"),
 		field.String("body"),
 		field.Strings("tags"),
-		field.Time("publish_at").Default(time.Now),
+		field.Time("publishAt").
+			StorageKey("publish_at").
+			Default(time.Now),
 	}
 }
 

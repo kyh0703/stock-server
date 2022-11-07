@@ -22,10 +22,10 @@ type User struct {
 	Username string `json:"username,omitempty"`
 	// Password holds the value of the "password" field.
 	Password string `json:"password,omitempty"`
-	// CreateAt holds the value of the "create_at" field.
-	CreateAt time.Time `json:"create_at,omitempty"`
-	// UpdateAt holds the value of the "update_at" field.
-	UpdateAt time.Time `json:"update_at,omitempty"`
+	// CreateAt holds the value of the "createAt" field.
+	CreateAt time.Time `json:"createAt,omitempty"`
+	// UpdateAt holds the value of the "updateAt" field.
+	UpdateAt time.Time `json:"updateAt,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges UserEdges `json:"edges"`
@@ -101,13 +101,13 @@ func (u *User) assignValues(columns []string, values []any) error {
 			}
 		case user.FieldCreateAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field create_at", values[i])
+				return fmt.Errorf("unexpected type %T for field createAt", values[i])
 			} else if value.Valid {
 				u.CreateAt = value.Time
 			}
 		case user.FieldUpdateAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field update_at", values[i])
+				return fmt.Errorf("unexpected type %T for field updateAt", values[i])
 			} else if value.Valid {
 				u.UpdateAt = value.Time
 			}
@@ -153,10 +153,10 @@ func (u *User) String() string {
 	builder.WriteString("password=")
 	builder.WriteString(u.Password)
 	builder.WriteString(", ")
-	builder.WriteString("create_at=")
+	builder.WriteString("createAt=")
 	builder.WriteString(u.CreateAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("update_at=")
+	builder.WriteString("updateAt=")
 	builder.WriteString(u.UpdateAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()

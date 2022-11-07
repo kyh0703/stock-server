@@ -38,7 +38,7 @@ type PostMutation struct {
 	title         *string
 	body          *string
 	tags          *[]string
-	publish_at    *time.Time
+	publishAt     *time.Time
 	clearedFields map[string]struct{}
 	user          *int
 	cleareduser   bool
@@ -253,21 +253,21 @@ func (m *PostMutation) ResetTags() {
 	m.tags = nil
 }
 
-// SetPublishAt sets the "publish_at" field.
+// SetPublishAt sets the "publishAt" field.
 func (m *PostMutation) SetPublishAt(t time.Time) {
-	m.publish_at = &t
+	m.publishAt = &t
 }
 
-// PublishAt returns the value of the "publish_at" field in the mutation.
+// PublishAt returns the value of the "publishAt" field in the mutation.
 func (m *PostMutation) PublishAt() (r time.Time, exists bool) {
-	v := m.publish_at
+	v := m.publishAt
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldPublishAt returns the old "publish_at" field's value of the Post entity.
+// OldPublishAt returns the old "publishAt" field's value of the Post entity.
 // If the Post object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *PostMutation) OldPublishAt(ctx context.Context) (v time.Time, err error) {
@@ -284,9 +284,9 @@ func (m *PostMutation) OldPublishAt(ctx context.Context) (v time.Time, err error
 	return oldValue.PublishAt, nil
 }
 
-// ResetPublishAt resets all changes to the "publish_at" field.
+// ResetPublishAt resets all changes to the "publishAt" field.
 func (m *PostMutation) ResetPublishAt() {
-	m.publish_at = nil
+	m.publishAt = nil
 }
 
 // SetUserID sets the "user" edge to the User entity by id.
@@ -357,7 +357,7 @@ func (m *PostMutation) Fields() []string {
 	if m.tags != nil {
 		fields = append(fields, post.FieldTags)
 	}
-	if m.publish_at != nil {
+	if m.publishAt != nil {
 		fields = append(fields, post.FieldPublishAt)
 	}
 	return fields
@@ -578,8 +578,8 @@ type UserMutation struct {
 	email         *string
 	username      *string
 	password      *string
-	create_at     *time.Time
-	update_at     *time.Time
+	createAt      *time.Time
+	updateAt      *time.Time
 	clearedFields map[string]struct{}
 	posts         map[int]struct{}
 	removedposts  map[int]struct{}
@@ -795,21 +795,21 @@ func (m *UserMutation) ResetPassword() {
 	m.password = nil
 }
 
-// SetCreateAt sets the "create_at" field.
+// SetCreateAt sets the "createAt" field.
 func (m *UserMutation) SetCreateAt(t time.Time) {
-	m.create_at = &t
+	m.createAt = &t
 }
 
-// CreateAt returns the value of the "create_at" field in the mutation.
+// CreateAt returns the value of the "createAt" field in the mutation.
 func (m *UserMutation) CreateAt() (r time.Time, exists bool) {
-	v := m.create_at
+	v := m.createAt
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCreateAt returns the old "create_at" field's value of the User entity.
+// OldCreateAt returns the old "createAt" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *UserMutation) OldCreateAt(ctx context.Context) (v time.Time, err error) {
@@ -826,26 +826,26 @@ func (m *UserMutation) OldCreateAt(ctx context.Context) (v time.Time, err error)
 	return oldValue.CreateAt, nil
 }
 
-// ResetCreateAt resets all changes to the "create_at" field.
+// ResetCreateAt resets all changes to the "createAt" field.
 func (m *UserMutation) ResetCreateAt() {
-	m.create_at = nil
+	m.createAt = nil
 }
 
-// SetUpdateAt sets the "update_at" field.
+// SetUpdateAt sets the "updateAt" field.
 func (m *UserMutation) SetUpdateAt(t time.Time) {
-	m.update_at = &t
+	m.updateAt = &t
 }
 
-// UpdateAt returns the value of the "update_at" field in the mutation.
+// UpdateAt returns the value of the "updateAt" field in the mutation.
 func (m *UserMutation) UpdateAt() (r time.Time, exists bool) {
-	v := m.update_at
+	v := m.updateAt
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldUpdateAt returns the old "update_at" field's value of the User entity.
+// OldUpdateAt returns the old "updateAt" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *UserMutation) OldUpdateAt(ctx context.Context) (v time.Time, err error) {
@@ -862,9 +862,9 @@ func (m *UserMutation) OldUpdateAt(ctx context.Context) (v time.Time, err error)
 	return oldValue.UpdateAt, nil
 }
 
-// ResetUpdateAt resets all changes to the "update_at" field.
+// ResetUpdateAt resets all changes to the "updateAt" field.
 func (m *UserMutation) ResetUpdateAt() {
-	m.update_at = nil
+	m.updateAt = nil
 }
 
 // AddPostIDs adds the "posts" edge to the Post entity by ids.
@@ -950,10 +950,10 @@ func (m *UserMutation) Fields() []string {
 	if m.password != nil {
 		fields = append(fields, user.FieldPassword)
 	}
-	if m.create_at != nil {
+	if m.createAt != nil {
 		fields = append(fields, user.FieldCreateAt)
 	}
-	if m.update_at != nil {
+	if m.updateAt != nil {
 		fields = append(fields, user.FieldUpdateAt)
 	}
 	return fields

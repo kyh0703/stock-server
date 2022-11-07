@@ -6,3 +6,5 @@ type PostCreateRequest struct {
 	Tags   []string `json:"tags" validate:"required"`
 	UserID int
 }
+
+type PostCreateResponse struct{}

@@ -24,8 +24,8 @@ type Post struct {
 	Body string `json:"body,omitempty"`
 	// Tags holds the value of the "tags" field.
 	Tags []string `json:"tags,omitempty"`
-	// PublishAt holds the value of the "publish_at" field.
-	PublishAt time.Time `json:"publish_at,omitempty"`
+	// PublishAt holds the value of the "publishAt" field.
+	PublishAt time.Time `json:"publishAt,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PostQuery when eager-loading is set.
 	Edges      PostEdges `json:"edges"`
@@ -112,7 +112,7 @@ func (po *Post) assignValues(columns []string, values []any) error {
 			}
 		case post.FieldPublishAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field publish_at", values[i])
+				return fmt.Errorf("unexpected type %T for field publishAt", values[i])
 			} else if value.Valid {
 				po.PublishAt = value.Time
 			}
@@ -165,7 +165,7 @@ func (po *Post) String() string {
 	builder.WriteString("tags=")
 	builder.WriteString(fmt.Sprintf("%v", po.Tags))
 	builder.WriteString(", ")
-	builder.WriteString("publish_at=")
+	builder.WriteString("publishAt=")
 	builder.WriteString(po.PublishAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()

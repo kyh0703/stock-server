@@ -39,13 +39,13 @@ func (pc *PostCreate) SetTags(s []string) *PostCreate {
 	return pc
 }
 
-// SetPublishAt sets the "publish_at" field.
+// SetPublishAt sets the "publishAt" field.
 func (pc *PostCreate) SetPublishAt(t time.Time) *PostCreate {
 	pc.mutation.SetPublishAt(t)
 	return pc
 }
 
-// SetNillablePublishAt sets the "publish_at" field if the given value is not nil.
+// SetNillablePublishAt sets the "publishAt" field if the given value is not nil.
 func (pc *PostCreate) SetNillablePublishAt(t *time.Time) *PostCreate {
 	if t != nil {
 		pc.SetPublishAt(*t)
@@ -167,7 +167,7 @@ func (pc *PostCreate) check() error {
 		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "Post.tags"`)}
 	}
 	if _, ok := pc.mutation.PublishAt(); !ok {
-		return &ValidationError{Name: "publish_at", err: errors.New(`ent: missing required field "Post.publish_at"`)}
+		return &ValidationError{Name: "publishAt", err: errors.New(`ent: missing required field "Post.publishAt"`)}
 	}
 	return nil
 }

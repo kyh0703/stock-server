@@ -95,7 +95,7 @@ func Body(v string) predicate.Post {
 	})
 }
 
-// PublishAt applies equality check predicate on the "publish_at" field. It's identical to PublishAtEQ.
+// PublishAt applies equality check predicate on the "publishAt" field. It's identical to PublishAtEQ.
 func PublishAt(v time.Time) predicate.Post {
 	return predicate.Post(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldPublishAt), v))
@@ -300,21 +300,21 @@ func BodyContainsFold(v string) predicate.Post {
 	})
 }
 
-// PublishAtEQ applies the EQ predicate on the "publish_at" field.
+// PublishAtEQ applies the EQ predicate on the "publishAt" field.
 func PublishAtEQ(v time.Time) predicate.Post {
 	return predicate.Post(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldPublishAt), v))
 	})
 }
 
-// PublishAtNEQ applies the NEQ predicate on the "publish_at" field.
+// PublishAtNEQ applies the NEQ predicate on the "publishAt" field.
 func PublishAtNEQ(v time.Time) predicate.Post {
 	return predicate.Post(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldPublishAt), v))
 	})
 }
 
-// PublishAtIn applies the In predicate on the "publish_at" field.
+// PublishAtIn applies the In predicate on the "publishAt" field.
 func PublishAtIn(vs ...time.Time) predicate.Post {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -325,7 +325,7 @@ func PublishAtIn(vs ...time.Time) predicate.Post {
 	})
 }
 
-// PublishAtNotIn applies the NotIn predicate on the "publish_at" field.
+// PublishAtNotIn applies the NotIn predicate on the "publishAt" field.
 func PublishAtNotIn(vs ...time.Time) predicate.Post {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -336,28 +336,28 @@ func PublishAtNotIn(vs ...time.Time) predicate.Post {
 	})
 }
 
-// PublishAtGT applies the GT predicate on the "publish_at" field.
+// PublishAtGT applies the GT predicate on the "publishAt" field.
 func PublishAtGT(v time.Time) predicate.Post {
 	return predicate.Post(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldPublishAt), v))
 	})
 }
 
-// PublishAtGTE applies the GTE predicate on the "publish_at" field.
+// PublishAtGTE applies the GTE predicate on the "publishAt" field.
 func PublishAtGTE(v time.Time) predicate.Post {
 	return predicate.Post(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldPublishAt), v))
 	})
 }
 
-// PublishAtLT applies the LT predicate on the "publish_at" field.
+// PublishAtLT applies the LT predicate on the "publishAt" field.
 func PublishAtLT(v time.Time) predicate.Post {
 	return predicate.Post(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldPublishAt), v))
 	})
 }
 
-// PublishAtLTE applies the LTE predicate on the "publish_at" field.
+// PublishAtLTE applies the LTE predicate on the "publishAt" field.
 func PublishAtLTE(v time.Time) predicate.Post {
 	return predicate.Post(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldPublishAt), v))

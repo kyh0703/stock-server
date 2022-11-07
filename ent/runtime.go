@@ -16,28 +16,42 @@ import (
 func init() {
 	postFields := schema.Post{}.Fields()
 	_ = postFields
-	// postDescPublishAt is the schema descriptor for publish_at field.
+	// postDescPublishAt is the schema descriptor for publishAt field.
 	postDescPublishAt := postFields[3].Descriptor()
-	// post.DefaultPublishAt holds the default value on creation for the publish_at field.
+	// post.DefaultPublishAt holds the default value on creation for the publishAt field.
 	post.DefaultPublishAt = postDescPublishAt.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescEmail is the schema descriptor for email field.
 	userDescEmail := userFields[0].Descriptor()
 	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
-	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
+	user.EmailValidator = func() func(string) error {
+		validators := userDescEmail.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(email string) error {
+			for _, fn := range fns {
+				if err := fn(email); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// userDescUsername is the schema descriptor for username field.
 	userDescUsername := userFields[1].Descriptor()
 	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
-	// userDescCreateAt is the schema descriptor for create_at field.
+	// userDescCreateAt is the schema descriptor for createAt field.
 	userDescCreateAt := userFields[3].Descriptor()
-	// user.DefaultCreateAt holds the default value on creation for the create_at field.
+	// user.DefaultCreateAt holds the default value on creation for the createAt field.
 	user.DefaultCreateAt = userDescCreateAt.Default.(func() time.Time)
-	// userDescUpdateAt is the schema descriptor for update_at field.
+	// userDescUpdateAt is the schema descriptor for updateAt field.
 	userDescUpdateAt := userFields[4].Descriptor()
-	// user.DefaultUpdateAt holds the default value on creation for the update_at field.
+	// user.DefaultUpdateAt holds the default value on creation for the updateAt field.
 	user.DefaultUpdateAt = userDescUpdateAt.Default.(func() time.Time)
-	// user.UpdateDefaultUpdateAt holds the default value on update for the update_at field.
+	// user.UpdateDefaultUpdateAt holds the default value on update for the updateAt field.
 	user.UpdateDefaultUpdateAt = userDescUpdateAt.UpdateDefault.(func() time.Time)
 }

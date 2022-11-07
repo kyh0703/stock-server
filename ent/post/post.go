@@ -17,7 +17,7 @@ const (
 	FieldBody = "body"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
-	// FieldPublishAt holds the string denoting the publish_at field in the database.
+	// FieldPublishAt holds the string denoting the publishat field in the database.
 	FieldPublishAt = "publish_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
@@ -63,6 +63,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultPublishAt holds the default value on creation for the "publish_at" field.
+	// DefaultPublishAt holds the default value on creation for the "publishAt" field.
 	DefaultPublishAt func() time.Time
 )
