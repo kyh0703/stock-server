@@ -22,10 +22,8 @@ type TokenMetaData struct {
 	RefreshTokenExpires int64
 }
 
-type AuthService struct{}
-
-func NewAuthService() *AuthService {
-	return &AuthService{}
+type AuthService struct {
+	authRepo AuthRepository
 }
 
 func (svc *AuthService) HashPassword(password string) (string, error) {
@@ -64,8 +62,9 @@ func (svc *AuthService) Logout(jwtString string) error {
 	if err != nil {
 		return err
 	}
-	if deleted, err := svc.removeToken(uuid); err != nil || deleted == 0 {
-		return err
+	deleted, err := svc.authRepo.Delete(uuid)
+	if err != nil || deleted == 0 {
+		return errors.New("failed to remove token")
 	}
 	return nil
 }
@@ -75,27 +74,31 @@ func (svc *AuthService) Refresh(jwtString string) (*TokenMetaData, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	userID, err := svc.getUserIDByRefreshToken(jwtString)
 	if err != nil {
 		return nil, err
 	}
-	if deleted, err := svc.removeToken(uuid); err != nil || deleted == 0 {
+
+	deleted, err := svc.authRepo.Delete(uuid)
+	if err != nil || deleted == 0 {
 		return nil, errors.New("failed to remove token")
 	}
+
 	token, err := svc.Login(userID)
 	if err != nil {
 		return nil, err
 	}
+
 	return token, nil
 }
 
 func (svc *AuthService) FindUserIDByUUID(UUID string) (int, error) {
-	id, err := database.Redis.Get(UUID).Result()
+	id, err := database.Redis.Get(UUID).Int()
 	if err != nil {
 		return 0, err
 	}
-	userID, _ := strconv.ParseUint(id, 10, 64)
-	return int(userID), nil
+	return id, nil
 }
 
 func (svc *AuthService) GetAccessToken(jwtString string) (jwt.MapClaims, error) {
@@ -190,33 +193,27 @@ func (svc *AuthService) generateToken(userID int) (*TokenMetaData, error) {
 func (svc *AuthService) saveToken(userID int, token *TokenMetaData) error {
 	// convert Unis to UTC
 	var (
-		at  = time.Unix(token.AccessTokenExpires, 0)
-		rt  = time.Unix(token.RefreshTokenExpires, 0)
-		now = time.Now()
+		accessTokenExpire  = time.Unix(token.AccessTokenExpires, 0)
+		refreshTokenExpire = time.Unix(token.RefreshTokenExpires, 0)
+		now                = time.Now()
 	)
-	if err := database.Redis.Set(
+	if err := svc.authRepo.InsertToken(
+		userID,
 		token.AccessUUID,
-		strconv.Itoa(userID),
-		at.Sub(now)).
-		Err(); err != nil {
+		accessTokenExpire,
+		now,
+	); err != nil {
 		return err
 	}
-	if err := database.Redis.Set(
+	if err := svc.authRepo.InsertToken(
+		userID,
 		token.RefreshUUID,
-		strconv.Itoa(userID),
-		rt.Sub(now)).
-		Err(); err != nil {
+		refreshTokenExpire,
+		now,
+	); err != nil {
 		return err
 	}
 	return nil
-}
-
-func (svc *AuthService) removeToken(UUID string) (int64, error) {
-	deleted, err := database.Redis.Del(UUID).Result()
-	if err != nil {
-		return 0, err
-	}
-	return deleted, nil
 }
 
 func (svc *AuthService) getToken(jwtString, key string) (*jwt.Token, error) {

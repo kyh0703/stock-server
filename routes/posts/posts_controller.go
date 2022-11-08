@@ -1,19 +1,18 @@
 package posts
 
 import (
-	"math"
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/kyh0703/stock-server/middleware"
-	postsdto "github.com/kyh0703/stock-server/routes/posts/dto"
+	"github.com/kyh0703/stock-server/routes/posts/dto"
 	"github.com/kyh0703/stock-server/types"
 )
 
 type postController struct {
-	path         string
-	postsService postsService
+	path     string
+	postsSvc postsService
 }
 
 func NewPostController() *postController {
@@ -40,23 +39,15 @@ func (ctrl *postController) Routes(router fiber.Router) {
 // @Success     200
 // @Router      /posts/write [post]
 func (ctrl *postController) Write(c *fiber.Ctx) error {
-	var req postsdto.PostCreateRequest
-
-	// body parser
-	if err := c.BodyParser(&req); err != nil {
+	req := new(dto.PostCreateRequest)
+	if err := c.BodyParser(req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
-
-	// validate request message
 	if err := validator.New().StructCtx(c.Context(), req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
-
-	// set user id
 	req.UserID = c.UserContext().Value("user_id").(int)
-
-	// save the database
-	return ctrl.postsService.RegisterPost(c, req)
+	return ctrl.postsSvc.SavePost(c, req)
 }
 
 // List         godoc
@@ -67,33 +58,27 @@ func (ctrl *postController) Write(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /posts [get]
 func (ctrl *postController) List(c *fiber.Ctx) error {
-	// get query data
 	var (
-		page = c.Query("page", "1")
-		tag  = c.Query("tag")
-		name = c.Query("username")
+		page     = c.Query("page", "1")
+		limit    = c.Query("limit", "10")
+		tag      = c.Query("tag")
+		username = c.Query("username")
 	)
-
-	// parse page
 	pageInt, err := strconv.Atoi(page)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
-
-	// select data
-	posts, err := ctrl.postsService.FindPagesByNameOrTag(c.Context(), tag, name, pageInt, 10)
+	limitInt, err := strconv.Atoi(limit)
 	if err != nil {
-		return c.App().ErrorHandler(c, types.ErrServerInternal)
+		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
-
-	// get post count
-	count, err := ctrl.postsService.GetCountByNameOrTag(c.Context(), tag, name)
-	if err != nil {
-		return c.App().ErrorHandler(c, types.ErrServerInternal)
+	req := &dto.PostListRequest{
+		Page:     pageInt,
+		Limit:    limitInt,
+		Tag:      tag,
+		Username: username,
 	}
-
-	c.Response().Header.Set("last-page", strconv.Itoa(int(math.Ceil(float64(count/10)))))
-	return c.Status(fiber.StatusOK).JSON(posts)
+	return ctrl.postsSvc.GetPosts(c, req)
 }
 
 // GetPostById  godoc
@@ -104,17 +89,9 @@ func (ctrl *postController) List(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /posts/:id [post]
 func (ctrl *postController) GetPostById(c *fiber.Ctx) error {
-	// validate
 	postId, err := c.ParamsInt("id", 0)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
-
-	// get post data
-	post, err := ctrl.postsService.FindOne(c.Context(), postId)
-	if err != nil {
-		return c.App().ErrorHandler(c, types.ErrPostNotExist)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(post)
+	return ctrl.postsSvc.GetPost(c, postId)
 }

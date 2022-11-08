@@ -1,27 +1,120 @@
 package users
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/kyh0703/stock-server/database"
-	"github.com/kyh0703/stock-server/ent"
-	"github.com/kyh0703/stock-server/ent/user"
+	"github.com/gofiber/fiber/v2"
+	"github.com/kyh0703/stock-server/routes/auth"
+	"github.com/kyh0703/stock-server/routes/users/dto"
+	"github.com/kyh0703/stock-server/types"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UsersService struct{}
+type UsersService struct {
+	usersRepo UsersRepository
+	authSvc   auth.AuthService
+}
 
-func (svc *UsersService) CreateUser(ctx context.Context, name, email, password string) (*ent.User, error) {
-	ok, err := svc.CheckUserExist(ctx, email)
-	if err != nil || ok {
-		return nil, err
+func (svc *UsersService) Register(c *fiber.Ctx, req *dto.UserRegisterRequest) error {
+	if req.Password != req.PasswordConfirm {
+		return c.App().ErrorHandler(c, types.ErrPasswordNotCompareConfirm)
 	}
-	user, err := svc.SaveUser(ctx, name, email, password)
+
+	hash, err := svc.HashPassword(req.Password)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return user, err
+
+	exist, err := svc.usersRepo.IsExistByEmail(c.Context(), req.Email)
+	if err != nil {
+		return c.App().ErrorHandler(c, types.ErrUserNotExist)
+	} else if exist {
+		return c.App().ErrorHandler(c, types.ErrUserExist)
+	}
+
+	if _, err = svc.usersRepo.Insert(
+		c.Context(),
+		req.Username,
+		req.Email,
+		hash,
+	); err != nil {
+		return c.App().ErrorHandler(c, types.ErrServerInternal)
+	}
+
+	return c.SendStatus(fiber.StatusOK)
+}
+
+func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UserLoginRequest) error {
+	user, err := svc.usersRepo.FetchByEmail(c.Context(), req.Email)
+	if err != nil {
+		return c.App().ErrorHandler(c, types.ErrUserExist)
+	}
+
+	ok, err := svc.CompareHashPassword(user.Password, req.Password)
+	if err != nil || !ok {
+		return c.App().ErrorHandler(c, types.ErrPasswordInvalid)
+	}
+
+	token, err := svc.authSvc.Login(user.ID)
+	if err != nil {
+		return c.App().ErrorHandler(c, types.ErrServerInternal)
+	}
+
+	cookie := new(fiber.Cookie)
+	cookie.Name = "token"
+	cookie.Value = token.RefreshToken
+	cookie.HTTPOnly = true
+	cookie.Secure = true
+	c.Cookie(cookie)
+
+	res := &dto.UserLoginResponse{
+		ID:                 user.ID,
+		Email:              user.Email,
+		Username:           user.Username,
+		AccessToken:        token.AccessToken,
+		AccessTokenExpires: token.AccessTokenExpires,
+	}
+	return c.JSON(res)
+}
+
+func (svc *UsersService) Logout(c *fiber.Ctx, token string) error {
+	if err := svc.authSvc.Logout(token); err != nil {
+		return c.App().ErrorHandler(c, types.ErrServerInternal)
+	}
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (svc *UsersService) GetUserDetail(c *fiber.Ctx, req *dto.UserProfileRequest) error {
+	user, err := svc.usersRepo.FetchOne(c.Context(), req.ID)
+	if err != nil {
+		return c.App().ErrorHandler(c, types.ErrUserNotExist)
+	}
+
+	res := &dto.UserProfileResponse{
+		ID:       user.ID,
+		Email:    user.Email,
+		Username: user.Username,
+	}
+	return c.JSON(res)
+}
+
+func (svc *UsersService) RefreshToken(c *fiber.Ctx, req *dto.RefreshTokenRequest) error {
+	token, err := svc.authSvc.Refresh(req.RefreshToken)
+	if err != nil {
+		return c.App().ErrorHandler(c, types.ErrServerInternal)
+	}
+
+	cookie := new(fiber.Cookie)
+	cookie.Name = "token"
+	cookie.Value = token.RefreshToken
+	cookie.HTTPOnly = true
+	cookie.Secure = true
+	c.Cookie(cookie)
+
+	res := &dto.RefreshTokenResponse{
+		AccessToken: token.AccessToken,
+	}
+	return c.JSON(res)
 }
 
 func (svc *UsersService) HashPassword(password string) (string, error) {
@@ -32,7 +125,7 @@ func (svc *UsersService) HashPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-func CompareHashPassword(hash, password string) (bool, error) {
+func (svc *UsersService) CompareHashPassword(hash, password string) (bool, error) {
 	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
 		if err != bcrypt.ErrMismatchedHashAndPassword {
 			return false, fmt.Errorf("mismatch password: %w", err)
@@ -40,41 +133,4 @@ func CompareHashPassword(hash, password string) (bool, error) {
 		return false, err
 	}
 	return true, nil
-}
-
-func (svc *UsersService) SaveUser(ctx context.Context, name, email, password string) (*ent.User, error) {
-	return database.Ent.User.
-		Create().
-		SetUsername(name).
-		SetPassword(password).
-		SetEmail(email).
-		Save(ctx)
-}
-
-func (svc *UsersService) CheckUserExist(ctx context.Context, email string) (bool, error) {
-	return database.Ent.User.
-		Query().
-		Where(user.Email(email)).
-		Exist(ctx)
-}
-
-func (svc *UsersService) FindOne(ctx context.Context, id int) (*ent.User, error) {
-	return database.Ent.User.
-		Query().
-		Where(user.ID(id)).
-		Only(ctx)
-}
-
-func (svc *UsersService) FindByEmail(ctx context.Context, email string) (*ent.User, error) {
-	return database.Ent.User.
-		Query().
-		Where(user.Email(email)).
-		Only(ctx)
-}
-
-func (svc *UsersService) IsExistEmail(ctx context.Context, email string) (bool, error) {
-	return database.Ent.User.
-		Query().
-		Where(user.Email(email)).
-		Exist(ctx)
 }

@@ -13,17 +13,17 @@ import (
 
 type PostsRepository struct{}
 
-func (repository *PostsRepository) Save(ctx context.Context, post *ent.Post, userId int) (*ent.Post, error) {
+func (repo *PostsRepository) Insert(ctx context.Context, title, body string, tags []string, userId int) (*ent.Post, error) {
 	return database.Ent.Post.
 		Create().
-		SetTitle(post.Title).
-		SetBody(post.Body).
-		SetTags(post.Tags).
+		SetTitle(title).
+		SetBody(body).
+		SetTags(tags).
 		SetUserID(userId).
 		Save(ctx)
 }
 
-func (repository *PostsRepository) FindOne(ctx context.Context, id int) (*ent.Post, error) {
+func (repo *PostsRepository) FetchOne(ctx context.Context, id int) (*ent.Post, error) {
 	return database.Ent.Post.
 		Query().
 		Select(
@@ -36,7 +36,7 @@ func (repository *PostsRepository) FindOne(ctx context.Context, id int) (*ent.Po
 		Only(ctx)
 }
 
-func (repository *PostsRepository) FetchPostsWithTagOrUser(ctx context.Context, tag, username string, page, limit int) ([]*ent.Post, error) {
+func (repo *PostsRepository) FetchPostsWithTagOrUser(ctx context.Context, tag, username string, page, limit int) ([]*ent.Post, error) {
 	return database.Ent.Debug().Post.
 		Query().
 		Select(post.FieldID, post.FieldTitle, post.FieldBody, post.FieldTags).
@@ -53,7 +53,7 @@ func (repository *PostsRepository) FetchPostsWithTagOrUser(ctx context.Context, 
 		All(ctx)
 }
 
-func (repository *PostsRepository) CountByNameOrTag(ctx context.Context, tag, name string) (int, error) {
+func (repo *PostsRepository) CountByNameOrTag(ctx context.Context, tag, name string) (int, error) {
 	return database.Ent.Post.
 		Query().
 		Where(
