@@ -66,7 +66,9 @@ func (svc *postsService) GetPosts(c *fiber.Ctx, req *dto.PostListRequest) error 
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 
-	c.Response().Header.Set("last-page", strconv.Itoa(int(math.Ceil(float64(count/10)))))
-
+	lastPage := strconv.Itoa(
+		int(math.Ceil(float64(count) / float64(req.Limit))),
+	)
+	c.Response().Header.Set("last-page", lastPage)
 	return c.Status(fiber.StatusOK).JSON(posts)
 }

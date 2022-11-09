@@ -14,7 +14,7 @@ import (
 type PostsRepository struct{}
 
 func (repo *PostsRepository) Insert(ctx context.Context, title, body string, tags []string, userId int) (*ent.Post, error) {
-	return database.Ent.Post.
+	return database.Ent.Debug().Post.
 		Create().
 		SetTitle(title).
 		SetBody(body).
@@ -24,7 +24,7 @@ func (repo *PostsRepository) Insert(ctx context.Context, title, body string, tag
 }
 
 func (repo *PostsRepository) FetchOne(ctx context.Context, id int) (*ent.Post, error) {
-	return database.Ent.Post.
+	return database.Ent.Debug().Post.
 		Query().
 		Select(
 			post.FieldID,
@@ -54,7 +54,7 @@ func (repo *PostsRepository) FetchPostsWithTagOrUser(ctx context.Context, tag, u
 }
 
 func (repo *PostsRepository) CountByNameOrTag(ctx context.Context, tag, name string) (int, error) {
-	return database.Ent.Post.
+	return database.Ent.Debug().Post.
 		Query().
 		Where(
 			post.And(
