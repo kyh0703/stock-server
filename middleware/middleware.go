@@ -17,7 +17,7 @@ func SetUserContext() fiber.Handler {
 	}
 }
 
-func SetJSON() fiber.Handler {
+func SetJson() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if !c.Is("json") {
 			return fiber.ErrBadRequest
