@@ -1,0 +1,13 @@
+type User {
+    id: ID!
+    email: String!
+    password: String!
+    PublishAt: Time
+}
+
+type Mutation {
+}
+
+extend type Query {
+    user(id: ID!): User
+}
