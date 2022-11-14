@@ -26,35 +26,36 @@ func (svc *postsService) SavePost(c *fiber.Ctx, req *dto.PostCreateRequest) erro
 	}
 
 	res := &dto.PostCreateResponse{
-		ID:     post.ID,
-		Title:  post.Title,
-		Body:   post.Body,
-		Tags:   post.Tags,
-		UserID: req.UserID,
+		ID:        post.ID,
+		Title:     post.Title,
+		Body:      post.Body,
+		Tags:      post.Tags,
+		PublishAt: post.PublishAt.String(),
+		UserID:    req.UserID,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(res)
 }
 
-func (svc *postsService) GetPost(c *fiber.Ctx, req *dto.PostFetchRequest) error {
+func (svc *postsService) GetPost(c *fiber.Ctx, req dto.PostFetchRequest) error {
 	post, err := svc.postRepo.FetchOneWithUser(c.Context(), req.ID)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrPostNotExist)
 	}
 
-	res := &dto.PostFetchResponse{
-		ID:        post.ID,
-		Title:     post.Title,
-		Body:      post.Body,
-		PublishAt: post.PublishAt.String(),
-		UserID:    post.Edges.User.ID,
-		Email:     post.Edges.User.Email,
-	}
+	var res dto.PostFetchResponse
+	res.ID = post.ID
+	res.Title = post.Title
+	res.Body = post.Body
+	res.Tags = post.Tags
+	res.PublishAt = post.PublishAt.String()
+	res.UserID = post.Edges.User.ID
+	res.Username = post.Edges.User.Username
 
 	return c.Status(fiber.StatusOK).JSON(res)
 }
 
-func (svc *postsService) GetPosts(c *fiber.Ctx, req *dto.PostListRequest) error {
+func (svc *postsService) GetPosts(c *fiber.Ctx, req dto.PostListRequest) error {
 	posts, err := svc.postRepo.FetchPostsWithTagOrUser(
 		c.Context(),
 		req.Tag,

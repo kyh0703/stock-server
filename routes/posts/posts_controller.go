@@ -73,7 +73,7 @@ func (ctrl *postController) List(c *fiber.Ctx) error {
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
-	req := &dto.PostListRequest{
+	req := dto.PostListRequest{
 		Page:     pageInt,
 		Limit:    limitInt,
 		Tag:      tag,
@@ -95,7 +95,7 @@ func (ctrl *postController) GetPostById(c *fiber.Ctx) error {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
-	req := &dto.PostFetchRequest{
+	req := dto.PostFetchRequest{
 		ID: postId,
 	}
 

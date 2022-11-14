@@ -47,9 +47,10 @@ func (repo *PostsRepository) FetchOneWithUser(ctx context.Context, id int) (*ent
 func (repo *PostsRepository) FetchPostsWithTagOrUser(ctx context.Context, tag, username string, page, limit int) ([]*ent.Post, error) {
 	return database.Ent.Debug().Post.
 		Query().
-		Select(post.FieldID, post.FieldTitle, post.FieldBody, post.FieldTags).
+		Select().
 		Limit(limit).
 		Offset((page - 1) * limit).
+		WithUser().
 		Where(
 			post.And(
 				post.HasUserWith(user.UsernameContains(username)),
