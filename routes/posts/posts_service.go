@@ -72,3 +72,10 @@ func (svc *postsService) GetPosts(c *fiber.Ctx, req *dto.PostListRequest) error 
 	c.Response().Header.Set("last-page", lastPage)
 	return c.Status(fiber.StatusOK).JSON(posts)
 }
+
+func (svc *postsService) RemovePost(c *fiber.Ctx, id int) error {
+	if err := svc.postRepo.DeleteById(c.Context(), id); err != nil {
+		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
+	}
+	return c.SendStatus(fiber.StatusNoContent)
+}

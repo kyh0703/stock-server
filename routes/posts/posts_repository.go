@@ -23,6 +23,12 @@ func (repo *PostsRepository) Insert(ctx context.Context, title, body string, tag
 		Save(ctx)
 }
 
+func (repo *PostsRepository) DeleteById(ctx context.Context, id int) error {
+	return database.Ent.Debug().Post.
+		DeleteOneID(id).
+		Exec(ctx)
+}
+
 func (repo *PostsRepository) FetchOne(ctx context.Context, id int) (*ent.Post, error) {
 	return database.Ent.Debug().Post.
 		Query().
