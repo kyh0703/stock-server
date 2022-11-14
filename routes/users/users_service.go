@@ -60,19 +60,12 @@ func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UserLoginRequest) error {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 
-	cookie := new(fiber.Cookie)
-	cookie.Name = "token"
-	cookie.Value = token.RefreshToken
-	cookie.HTTPOnly = true
-	cookie.Secure = true
-	c.Cookie(cookie)
-
 	res := &dto.UserLoginResponse{
-		ID:                 user.ID,
-		Email:              user.Email,
-		Username:           user.Username,
-		AccessToken:        token.AccessToken,
-		AccessTokenExpires: token.AccessTokenExpires,
+		ID:           user.ID,
+		Email:        user.Email,
+		Username:     user.Username,
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
 	}
 	return c.JSON(res)
 }

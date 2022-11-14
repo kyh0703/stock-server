@@ -29,7 +29,7 @@ func (ctrl *postController) Routes(router fiber.Router) {
 	router.Get("/", ctrl.List)
 	router.Get("/:id", ctrl.GetPostById)
 	router.Post("/write", middleware.TokenAuth(), ctrl.Write)
-	router.Delete("/:id", ctrl.RemovePostById)
+	router.Delete("/:id", middleware.TokenAuth(), ctrl.RemovePostById)
 }
 
 // Write        godoc
@@ -94,7 +94,12 @@ func (ctrl *postController) GetPostById(c *fiber.Ctx) error {
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
-	return ctrl.postsSvc.GetPost(c, postId)
+
+	req := &dto.PostFetchRequest{
+		ID: postId,
+	}
+
+	return ctrl.postsSvc.GetPost(c, req)
 }
 
 // GetPostById  godoc

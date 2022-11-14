@@ -36,13 +36,22 @@ func (svc *postsService) SavePost(c *fiber.Ctx, req *dto.PostCreateRequest) erro
 	return c.Status(fiber.StatusOK).JSON(res)
 }
 
-func (svc *postsService) GetPost(c *fiber.Ctx, id int) error {
-	post, err := svc.postRepo.FetchOne(c.Context(), id)
+func (svc *postsService) GetPost(c *fiber.Ctx, req *dto.PostFetchRequest) error {
+	post, err := svc.postRepo.FetchOneWithUser(c.Context(), req.ID)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrPostNotExist)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(post)
+	res := &dto.PostFetchResponse{
+		ID:        post.ID,
+		Title:     post.Title,
+		Body:      post.Body,
+		PublishAt: post.PublishAt.String(),
+		UserID:    post.Edges.User.ID,
+		Email:     post.Edges.User.Email,
+	}
+
+	return c.Status(fiber.StatusOK).JSON(res)
 }
 
 func (svc *postsService) GetPosts(c *fiber.Ctx, req *dto.PostListRequest) error {

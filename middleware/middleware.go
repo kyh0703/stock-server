@@ -2,11 +2,11 @@ package middleware
 
 import (
 	"context"
-	"net/http"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/kyh0703/stock-server/routes/auth"
+	"github.com/kyh0703/stock-server/types"
 )
 
 func SetUserContext() fiber.Handler {
@@ -36,26 +36,26 @@ func TokenAuth() fiber.Handler {
 		// Get token string 'Header : Authorization: Bearer ${accessToken}'
 		bearerToken := c.Get("Authorization")
 		if bearerToken == "" {
-			return fiber.NewError(fiber.StatusBadRequest, "token is invalid")
+			return c.App().ErrorHandler(c, types.ErrUnauthorized)
 		}
 		strArr := strings.Split(bearerToken, " ")
 		if len(strArr) == 2 {
 			tokenString = strArr[1]
 		}
 		if tokenString == "" {
-			return fiber.NewError(fiber.StatusBadRequest, "token is invalid")
+			return c.App().ErrorHandler(c, types.ErrUnauthorized)
 		}
 
 		// Get access token
 		uuid, err := authService.GetUUIDByAccessToken(tokenString)
 		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, "token is invalid")
+			return c.App().ErrorHandler(c, types.ErrUnauthorized)
 		}
 
 		// Validate in redis token
 		userID, err := authService.FindUserIDByUUID(uuid)
 		if err != nil {
-			return c.Status(http.StatusUnauthorized).SendString(err.Error())
+			return c.App().ErrorHandler(c, types.ErrUnauthorized)
 		}
 
 		// Set token to context

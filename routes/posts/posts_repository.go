@@ -32,13 +32,15 @@ func (repo *PostsRepository) DeleteById(ctx context.Context, id int) error {
 func (repo *PostsRepository) FetchOne(ctx context.Context, id int) (*ent.Post, error) {
 	return database.Ent.Debug().Post.
 		Query().
-		Select(
-			post.FieldID,
-			post.FieldTitle,
-			post.FieldBody,
-			post.FieldTags,
-		).
 		Where(post.ID(id)).
+		Only(ctx)
+}
+
+func (repo *PostsRepository) FetchOneWithUser(ctx context.Context, id int) (*ent.Post, error) {
+	return database.Ent.Debug().Post.
+		Query().
+		Where(post.ID(id)).
+		WithUser().
 		Only(ctx)
 }
 
