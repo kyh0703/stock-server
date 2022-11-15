@@ -25,13 +25,13 @@ func (svc *postsService) SavePost(c *fiber.Ctx, req *dto.PostsCreateRequest) err
 		return c.App().ErrorHandler(c, types.ErrUnauthorized)
 	}
 
-	var res dto.PostsCreateResponse
+	res := new(dto.PostsCreateResponse)
 	res.ID = post.ID
 	res.Title = post.Title
 	res.Body = post.Body
 	res.Tags = post.Tags
 	res.PublishAt = post.PublishAt.String()
-	res.UserID = post.Edges.User.ID
+	res.UserID = req.UserID
 
 	return c.Status(fiber.StatusOK).JSON(res)
 }
