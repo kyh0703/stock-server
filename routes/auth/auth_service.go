@@ -31,16 +31,19 @@ func (svc *AuthService) HashPassword(password string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to generate hash: %w", err)
 	}
+
 	return string(hash), nil
 }
 
 func (svc *AuthService) CompareHashPassword(hash, password string) (bool, error) {
-	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
 		if err != bcrypt.ErrMismatchedHashAndPassword {
 			return false, fmt.Errorf("mismatch password: %w", err)
 		}
 		return false, err
 	}
+
 	return true, nil
 }
 
@@ -50,10 +53,12 @@ func (svc *AuthService) Login(id int) (*TokenMetaData, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	// save the redis
 	if err := svc.saveToken(id, token); err != nil {
 		return nil, err
 	}
+
 	return token, nil
 }
 
@@ -62,10 +67,12 @@ func (svc *AuthService) Logout(jwtString string) error {
 	if err != nil {
 		return err
 	}
+
 	deleted, err := svc.authRepo.Delete(uuid)
 	if err != nil || deleted == 0 {
 		return errors.New("failed to remove token")
 	}
+
 	return nil
 }
 
@@ -98,6 +105,7 @@ func (svc *AuthService) FindUserIDByUUID(UUID string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return id, nil
 }
 
@@ -106,10 +114,12 @@ func (svc *AuthService) GetAccessToken(jwtString string) (jwt.MapClaims, error) 
 	if err != nil {
 		return nil, err
 	}
+
 	claims, ok := jwtToken.Claims.(jwt.MapClaims)
 	if !ok && !jwtToken.Valid {
 		return nil, errors.New("Access token valid error")
 	}
+
 	return claims, nil
 }
 
@@ -118,10 +128,12 @@ func (svc *AuthService) GetRefreshToken(jwtString string) (jwt.MapClaims, error)
 	if err != nil {
 		return nil, err
 	}
+
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok && !token.Valid {
 		return nil, errors.New("Refresh token valid error")
 	}
+
 	return claims, nil
 }
 
@@ -130,14 +142,17 @@ func (svc *AuthService) GetUUIDByAccessToken(jwtString string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	claims, ok := jwtToken.Claims.(jwt.MapClaims)
 	if !ok || !jwtToken.Valid {
 		return "", errors.New("failed extract token metadata")
 	}
+
 	accessUUID, ok := claims["access_uuid"].(string)
 	if !ok {
 		return "", errors.New("failed to get access uuid")
 	}
+
 	return accessUUID, nil
 }
 
@@ -147,6 +162,7 @@ func (svc *AuthService) generateAccessToken(id int, UUID string, expire int64) (
 	claims["access_uuid"] = UUID
 	claims["user_id"] = id
 	claims["exp"] = expire
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(config.Env.AccessSecretKey))
 }
@@ -156,38 +172,39 @@ func (svc *AuthService) generateRefreshToken(id int, UUID string, expire int64) 
 	claims["refresh_uuid"] = UUID
 	claims["user_id"] = id
 	claims["exp"] = expire
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(config.Env.RefreshSecretKey))
 }
 
 func (svc *AuthService) generateToken(userID int) (*TokenMetaData, error) {
 	// Create access token metadata with expire 30min
-	tokenMeta := new(TokenMetaData)
-	tokenMeta.AccessTokenExpires = time.Now().Add(time.Minute * 30).Unix()
-	tokenMeta.AccessUUID = uuid.NewString()
+	metadata := new(TokenMetaData)
+	metadata.AccessTokenExpires = time.Now().Add(time.Minute * 30).Unix()
+	metadata.AccessUUID = uuid.NewString()
 	accessToken, err := svc.generateAccessToken(
 		userID,
-		tokenMeta.AccessUUID,
-		tokenMeta.AccessTokenExpires,
+		metadata.AccessUUID,
+		metadata.AccessTokenExpires,
 	)
 	if err != nil {
 		return nil, err
 	}
-	tokenMeta.AccessToken = accessToken
+	metadata.AccessToken = accessToken
 
 	// Create refresh token metadata with expire 7day
-	tokenMeta.RefreshTokenExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
-	tokenMeta.RefreshUUID = uuid.NewString()
+	metadata.RefreshTokenExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+	metadata.RefreshUUID = uuid.NewString()
 	refreshToken, err := svc.generateRefreshToken(
 		userID,
-		tokenMeta.RefreshUUID,
-		tokenMeta.RefreshTokenExpires,
+		metadata.RefreshUUID,
+		metadata.RefreshTokenExpires,
 	)
 	if err != nil {
 		return nil, err
 	}
-	tokenMeta.RefreshToken = refreshToken
-	return tokenMeta, nil
+	metadata.RefreshToken = refreshToken
+	return metadata, nil
 }
 
 func (svc *AuthService) saveToken(userID int, token *TokenMetaData) error {
@@ -230,14 +247,17 @@ func (service *AuthService) getUUIDByRefreshToken(jwtString string) (string, err
 	if err != nil {
 		return "", err
 	}
+
 	claims, ok := jwtToken.Claims.(jwt.MapClaims)
 	if !ok || !jwtToken.Valid {
 		return "", errors.New("failed extract token metadata")
 	}
+
 	refreshUUID, ok := claims["refresh_uuid"].(string)
 	if !ok {
 		return "", errors.New("failed to get refresh uuid")
 	}
+
 	return refreshUUID, nil
 }
 
@@ -246,13 +266,16 @@ func (service *AuthService) getUserIDByRefreshToken(jwtString string) (int, erro
 	if err != nil {
 		return 0, err
 	}
+
 	claims, ok := jwtToken.Claims.(jwt.MapClaims)
 	if !ok || !jwtToken.Valid {
 		return 0, errors.New("failed extract token metadata")
 	}
+
 	userID, err := strconv.ParseUint(fmt.Sprintf("%.0f", claims["user_id"]), 10, 64)
 	if err != nil {
 		return 0, err
 	}
+
 	return int(userID), nil
 }

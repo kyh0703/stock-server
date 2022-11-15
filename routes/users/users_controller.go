@@ -9,8 +9,8 @@ import (
 )
 
 type usersController struct {
-	path    string
-	userSvc UsersService
+	path     string
+	usersSvc UsersService
 }
 
 func NewUsersController() *usersController {
@@ -39,14 +39,16 @@ func (ctrl *usersController) Routes(router fiber.Router) {
 // @Success     200
 // @Router      /users/register [post]
 func (ctrl *usersController) Register(c *fiber.Ctx) error {
-	req := new(dto.UserRegisterRequest)
+	req := new(dto.UsersRegisterRequest)
 	if err := c.BodyParser(req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
+
 	if err := validator.New().StructCtx(c.Context(), req); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	return ctrl.userSvc.Register(c, req)
+
+	return ctrl.usersSvc.Register(c, req)
 }
 
 // Login        godoc
@@ -57,14 +59,16 @@ func (ctrl *usersController) Register(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /users/login [post]
 func (ctrl *usersController) Login(c *fiber.Ctx) error {
-	req := new(dto.UserLoginRequest)
+	req := new(dto.UsersLoginRequest)
 	if err := c.BodyParser(req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
+
 	if err := validator.New().StructCtx(c.Context(), req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
-	return ctrl.userSvc.Login(c, req)
+
+	return ctrl.usersSvc.Login(c, req)
 }
 
 // Check        godoc
@@ -75,12 +79,14 @@ func (ctrl *usersController) Login(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /users/profile [get]
 func (ctrl *usersController) Profile(c *fiber.Ctx) error {
-	req := new(dto.UserProfileRequest)
+	req := new(dto.UsersProfileRequest)
 	req.ID = c.UserContext().Value("user_id").(int)
+
 	if err := validator.New().StructCtx(c.Context(), req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
-	return ctrl.userSvc.GetUserDetail(c, req)
+
+	return ctrl.usersSvc.GetUserDetail(c, req)
 }
 
 // Logout       godoc
@@ -92,7 +98,7 @@ func (ctrl *usersController) Profile(c *fiber.Ctx) error {
 // @Router      /users/logout [post]
 func (ctrl *usersController) Logout(c *fiber.Ctx) error {
 	token := c.UserContext().Value("access_token").(string)
-	return ctrl.userSvc.Logout(c, token)
+	return ctrl.usersSvc.Logout(c, token)
 }
 
 // Refresh      godoc
@@ -103,12 +109,14 @@ func (ctrl *usersController) Logout(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /users/refresh [post]
 func (ctrl *usersController) Refresh(c *fiber.Ctx) error {
-	req := new(dto.RefreshTokenRequest)
+	req := new(dto.UsersRefreshRequest)
 	if err := c.BodyParser(req); err != nil {
 		return c.App().ErrorHandler(c, fiber.ErrBadRequest)
 	}
+
 	if err := validator.New().StructCtx(c.Context(), req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
-	return ctrl.userSvc.RefreshToken(c, req)
+
+	return ctrl.usersSvc.RefreshToken(c, req)
 }

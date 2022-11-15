@@ -1,10 +1,10 @@
 package dto
 
-type UserProfileRequest struct {
+type UsersProfileRequest struct {
 	ID int `json:"id"`
 }
 
-type UserProfileResponse struct {
+type UsersProfileResponse struct {
 	ID       int    `json:"id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`

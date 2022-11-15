@@ -1,9 +1,9 @@
 package dto
 
-type RefreshTokenRequest struct {
+type UsersRefreshRequest struct {
 	RefreshToken string `json:"refreshToken" validate:"require"`
 }
 
-type RefreshTokenResponse struct {
+type UsersRefreshResponse struct {
 	AccessToken string `json:"accessToken" validate:"require"`
 }

@@ -10,22 +10,22 @@ import (
 	"github.com/kyh0703/stock-server/types"
 )
 
-type postController struct {
+type postsController struct {
 	path     string
 	postsSvc postsService
 }
 
-func NewPostController() *postController {
-	return &postController{
+func NewPostController() *postsController {
+	return &postsController{
 		path: "posts",
 	}
 }
 
-func (ctrl *postController) Path() string {
+func (ctrl *postsController) Path() string {
 	return ctrl.path
 }
 
-func (ctrl *postController) Routes(router fiber.Router) {
+func (ctrl *postsController) Routes(router fiber.Router) {
 	router.Get("/", ctrl.List)
 	router.Get("/:id", ctrl.GetPostById)
 	router.Post("/write", middleware.TokenAuth(), ctrl.Write)
@@ -39,14 +39,16 @@ func (ctrl *postController) Routes(router fiber.Router) {
 // @Produce     json
 // @Success     200
 // @Router      /posts/write [post]
-func (ctrl *postController) Write(c *fiber.Ctx) error {
-	req := new(dto.PostCreateRequest)
+func (ctrl *postsController) Write(c *fiber.Ctx) error {
+	req := new(dto.PostsCreateRequest)
 	if err := c.BodyParser(req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
+
 	if err := validator.New().StructCtx(c.Context(), req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
+
 	req.UserID = c.UserContext().Value("user_id").(int)
 	return ctrl.postsSvc.SavePost(c, req)
 }
@@ -58,44 +60,48 @@ func (ctrl *postController) Write(c *fiber.Ctx) error {
 // @Produce     json
 // @Success     200
 // @Router      /posts [get]
-func (ctrl *postController) List(c *fiber.Ctx) error {
+func (ctrl *postsController) List(c *fiber.Ctx) error {
 	var (
 		page     = c.Query("page", "1")
 		limit    = c.Query("limit", "10")
 		tag      = c.Query("tag")
 		username = c.Query("username")
 	)
+
 	pageInt, err := strconv.Atoi(page)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
+
 	limitInt, err := strconv.Atoi(limit)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
-	req := dto.PostListRequest{
+
+	req := &dto.PostsListRequest{
 		Page:     pageInt,
 		Limit:    limitInt,
 		Tag:      tag,
 		Username: username,
 	}
+
 	return ctrl.postsSvc.GetPosts(c, req)
 }
 
 // GetPostById  godoc
-// @Summary     register auth info
-// @Description register stock api
+// @Summary     fetch posts api
+// @Description fetch posts by postID
 // @Tags        auth
 // @Produce     json
 // @Success     200
 // @Router      /posts/:id [post]
-func (ctrl *postController) GetPostById(c *fiber.Ctx) error {
+func (ctrl *postsController) GetPostById(c *fiber.Ctx) error {
 	postId, err := c.ParamsInt("id", 0)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
-	req := dto.PostFetchRequest{
+	req := &dto.PostsFetchRequest{
 		ID: postId,
 	}
 
@@ -103,16 +109,17 @@ func (ctrl *postController) GetPostById(c *fiber.Ctx) error {
 }
 
 // GetPostById  godoc
-// @Summary     remove post
-// @Description remove post api
+// @Summary     remove post api
+// @Description remove post by postID
 // @Tags        post
 // @Produce     json
 // @Success     200
 // @Router      /posts/:id [delete]
-func (ctrl *postController) RemovePostById(c *fiber.Ctx) error {
+func (ctrl *postsController) RemovePostById(c *fiber.Ctx) error {
 	postId, err := c.ParamsInt("id", 0)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
+
 	return ctrl.postsSvc.RemovePost(c, postId)
 }

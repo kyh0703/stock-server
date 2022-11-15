@@ -10,61 +10,61 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/kyh0703/stock-server/ent/post"
+	"github.com/kyh0703/stock-server/ent/posts"
 	"github.com/kyh0703/stock-server/ent/predicate"
-	"github.com/kyh0703/stock-server/ent/user"
+	"github.com/kyh0703/stock-server/ent/users"
 )
 
-// PostQuery is the builder for querying Post entities.
-type PostQuery struct {
+// PostsQuery is the builder for querying Posts entities.
+type PostsQuery struct {
 	config
 	limit      *int
 	offset     *int
 	unique     *bool
 	order      []OrderFunc
 	fields     []string
-	predicates []predicate.Post
-	withUser   *UserQuery
+	predicates []predicate.Posts
+	withUser   *UsersQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the PostQuery builder.
-func (pq *PostQuery) Where(ps ...predicate.Post) *PostQuery {
+// Where adds a new predicate for the PostsQuery builder.
+func (pq *PostsQuery) Where(ps ...predicate.Posts) *PostsQuery {
 	pq.predicates = append(pq.predicates, ps...)
 	return pq
 }
 
 // Limit adds a limit step to the query.
-func (pq *PostQuery) Limit(limit int) *PostQuery {
+func (pq *PostsQuery) Limit(limit int) *PostsQuery {
 	pq.limit = &limit
 	return pq
 }
 
 // Offset adds an offset step to the query.
-func (pq *PostQuery) Offset(offset int) *PostQuery {
+func (pq *PostsQuery) Offset(offset int) *PostsQuery {
 	pq.offset = &offset
 	return pq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (pq *PostQuery) Unique(unique bool) *PostQuery {
+func (pq *PostsQuery) Unique(unique bool) *PostsQuery {
 	pq.unique = &unique
 	return pq
 }
 
 // Order adds an order step to the query.
-func (pq *PostQuery) Order(o ...OrderFunc) *PostQuery {
+func (pq *PostsQuery) Order(o ...OrderFunc) *PostsQuery {
 	pq.order = append(pq.order, o...)
 	return pq
 }
 
 // QueryUser chains the current query on the "user" edge.
-func (pq *PostQuery) QueryUser() *UserQuery {
-	query := &UserQuery{config: pq.config}
+func (pq *PostsQuery) QueryUser() *UsersQuery {
+	query := &UsersQuery{config: pq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := pq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -74,9 +74,9 @@ func (pq *PostQuery) QueryUser() *UserQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(post.Table, post.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, post.UserTable, post.UserColumn),
+			sqlgraph.From(posts.Table, posts.FieldID, selector),
+			sqlgraph.To(users.Table, users.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, posts.UserTable, posts.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -84,21 +84,21 @@ func (pq *PostQuery) QueryUser() *UserQuery {
 	return query
 }
 
-// First returns the first Post entity from the query.
-// Returns a *NotFoundError when no Post was found.
-func (pq *PostQuery) First(ctx context.Context) (*Post, error) {
+// First returns the first Posts entity from the query.
+// Returns a *NotFoundError when no Posts was found.
+func (pq *PostsQuery) First(ctx context.Context) (*Posts, error) {
 	nodes, err := pq.Limit(1).All(ctx)
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{post.Label}
+		return nil, &NotFoundError{posts.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (pq *PostQuery) FirstX(ctx context.Context) *Post {
+func (pq *PostsQuery) FirstX(ctx context.Context) *Posts {
 	node, err := pq.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -106,22 +106,22 @@ func (pq *PostQuery) FirstX(ctx context.Context) *Post {
 	return node
 }
 
-// FirstID returns the first Post ID from the query.
-// Returns a *NotFoundError when no Post ID was found.
-func (pq *PostQuery) FirstID(ctx context.Context) (id int, err error) {
+// FirstID returns the first Posts ID from the query.
+// Returns a *NotFoundError when no Posts ID was found.
+func (pq *PostsQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = pq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{post.Label}
+		err = &NotFoundError{posts.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (pq *PostQuery) FirstIDX(ctx context.Context) int {
+func (pq *PostsQuery) FirstIDX(ctx context.Context) int {
 	id, err := pq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -129,10 +129,10 @@ func (pq *PostQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns a single Post entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one Post entity is found.
-// Returns a *NotFoundError when no Post entities are found.
-func (pq *PostQuery) Only(ctx context.Context) (*Post, error) {
+// Only returns a single Posts entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one Posts entity is found.
+// Returns a *NotFoundError when no Posts entities are found.
+func (pq *PostsQuery) Only(ctx context.Context) (*Posts, error) {
 	nodes, err := pq.Limit(2).All(ctx)
 	if err != nil {
 		return nil, err
@@ -141,14 +141,14 @@ func (pq *PostQuery) Only(ctx context.Context) (*Post, error) {
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{post.Label}
+		return nil, &NotFoundError{posts.Label}
 	default:
-		return nil, &NotSingularError{post.Label}
+		return nil, &NotSingularError{posts.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (pq *PostQuery) OnlyX(ctx context.Context) *Post {
+func (pq *PostsQuery) OnlyX(ctx context.Context) *Posts {
 	node, err := pq.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -156,10 +156,10 @@ func (pq *PostQuery) OnlyX(ctx context.Context) *Post {
 	return node
 }
 
-// OnlyID is like Only, but returns the only Post ID in the query.
-// Returns a *NotSingularError when more than one Post ID is found.
+// OnlyID is like Only, but returns the only Posts ID in the query.
+// Returns a *NotSingularError when more than one Posts ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (pq *PostQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (pq *PostsQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = pq.Limit(2).IDs(ctx); err != nil {
 		return
@@ -168,15 +168,15 @@ func (pq *PostQuery) OnlyID(ctx context.Context) (id int, err error) {
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{post.Label}
+		err = &NotFoundError{posts.Label}
 	default:
-		err = &NotSingularError{post.Label}
+		err = &NotSingularError{posts.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (pq *PostQuery) OnlyIDX(ctx context.Context) int {
+func (pq *PostsQuery) OnlyIDX(ctx context.Context) int {
 	id, err := pq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -184,8 +184,8 @@ func (pq *PostQuery) OnlyIDX(ctx context.Context) int {
 	return id
 }
 
-// All executes the query and returns a list of Posts.
-func (pq *PostQuery) All(ctx context.Context) ([]*Post, error) {
+// All executes the query and returns a list of PostsSlice.
+func (pq *PostsQuery) All(ctx context.Context) ([]*Posts, error) {
 	if err := pq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
@@ -193,7 +193,7 @@ func (pq *PostQuery) All(ctx context.Context) ([]*Post, error) {
 }
 
 // AllX is like All, but panics if an error occurs.
-func (pq *PostQuery) AllX(ctx context.Context) []*Post {
+func (pq *PostsQuery) AllX(ctx context.Context) []*Posts {
 	nodes, err := pq.All(ctx)
 	if err != nil {
 		panic(err)
@@ -201,17 +201,17 @@ func (pq *PostQuery) AllX(ctx context.Context) []*Post {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Post IDs.
-func (pq *PostQuery) IDs(ctx context.Context) ([]int, error) {
+// IDs executes the query and returns a list of Posts IDs.
+func (pq *PostsQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
-	if err := pq.Select(post.FieldID).Scan(ctx, &ids); err != nil {
+	if err := pq.Select(posts.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (pq *PostQuery) IDsX(ctx context.Context) []int {
+func (pq *PostsQuery) IDsX(ctx context.Context) []int {
 	ids, err := pq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -220,7 +220,7 @@ func (pq *PostQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (pq *PostQuery) Count(ctx context.Context) (int, error) {
+func (pq *PostsQuery) Count(ctx context.Context) (int, error) {
 	if err := pq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
@@ -228,7 +228,7 @@ func (pq *PostQuery) Count(ctx context.Context) (int, error) {
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (pq *PostQuery) CountX(ctx context.Context) int {
+func (pq *PostsQuery) CountX(ctx context.Context) int {
 	count, err := pq.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -237,7 +237,7 @@ func (pq *PostQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (pq *PostQuery) Exist(ctx context.Context) (bool, error) {
+func (pq *PostsQuery) Exist(ctx context.Context) (bool, error) {
 	if err := pq.prepareQuery(ctx); err != nil {
 		return false, err
 	}
@@ -245,7 +245,7 @@ func (pq *PostQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (pq *PostQuery) ExistX(ctx context.Context) bool {
+func (pq *PostsQuery) ExistX(ctx context.Context) bool {
 	exist, err := pq.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -253,18 +253,18 @@ func (pq *PostQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the PostQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the PostsQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (pq *PostQuery) Clone() *PostQuery {
+func (pq *PostsQuery) Clone() *PostsQuery {
 	if pq == nil {
 		return nil
 	}
-	return &PostQuery{
+	return &PostsQuery{
 		config:     pq.config,
 		limit:      pq.limit,
 		offset:     pq.offset,
 		order:      append([]OrderFunc{}, pq.order...),
-		predicates: append([]predicate.Post{}, pq.predicates...),
+		predicates: append([]predicate.Posts{}, pq.predicates...),
 		withUser:   pq.withUser.Clone(),
 		// clone intermediate query.
 		sql:    pq.sql.Clone(),
@@ -275,8 +275,8 @@ func (pq *PostQuery) Clone() *PostQuery {
 
 // WithUser tells the query-builder to eager-load the nodes that are connected to
 // the "user" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *PostQuery) WithUser(opts ...func(*UserQuery)) *PostQuery {
-	query := &UserQuery{config: pq.config}
+func (pq *PostsQuery) WithUser(opts ...func(*UsersQuery)) *PostsQuery {
+	query := &UsersQuery{config: pq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -294,12 +294,12 @@ func (pq *PostQuery) WithUser(opts ...func(*UserQuery)) *PostQuery {
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.Post.Query().
-//		GroupBy(post.FieldTitle).
+//	client.Posts.Query().
+//		GroupBy(posts.FieldTitle).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (pq *PostQuery) GroupBy(field string, fields ...string) *PostGroupBy {
-	grbuild := &PostGroupBy{config: pq.config}
+func (pq *PostsQuery) GroupBy(field string, fields ...string) *PostsGroupBy {
+	grbuild := &PostsGroupBy{config: pq.config}
 	grbuild.fields = append([]string{field}, fields...)
 	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
 		if err := pq.prepareQuery(ctx); err != nil {
@@ -307,7 +307,7 @@ func (pq *PostQuery) GroupBy(field string, fields ...string) *PostGroupBy {
 		}
 		return pq.sqlQuery(ctx), nil
 	}
-	grbuild.label = post.Label
+	grbuild.label = posts.Label
 	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
 	return grbuild
 }
@@ -321,20 +321,20 @@ func (pq *PostQuery) GroupBy(field string, fields ...string) *PostGroupBy {
 //		Title string `json:"title,omitempty"`
 //	}
 //
-//	client.Post.Query().
-//		Select(post.FieldTitle).
+//	client.Posts.Query().
+//		Select(posts.FieldTitle).
 //		Scan(ctx, &v)
-func (pq *PostQuery) Select(fields ...string) *PostSelect {
+func (pq *PostsQuery) Select(fields ...string) *PostsSelect {
 	pq.fields = append(pq.fields, fields...)
-	selbuild := &PostSelect{PostQuery: pq}
-	selbuild.label = post.Label
+	selbuild := &PostsSelect{PostsQuery: pq}
+	selbuild.label = posts.Label
 	selbuild.flds, selbuild.scan = &pq.fields, selbuild.Scan
 	return selbuild
 }
 
-func (pq *PostQuery) prepareQuery(ctx context.Context) error {
+func (pq *PostsQuery) prepareQuery(ctx context.Context) error {
 	for _, f := range pq.fields {
-		if !post.ValidColumn(f) {
+		if !posts.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -348,9 +348,9 @@ func (pq *PostQuery) prepareQuery(ctx context.Context) error {
 	return nil
 }
 
-func (pq *PostQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Post, error) {
+func (pq *PostsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Posts, error) {
 	var (
-		nodes       = []*Post{}
+		nodes       = []*Posts{}
 		withFKs     = pq.withFKs
 		_spec       = pq.querySpec()
 		loadedTypes = [1]bool{
@@ -361,13 +361,13 @@ func (pq *PostQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Post, e
 		withFKs = true
 	}
 	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, post.ForeignKeys...)
+		_spec.Node.Columns = append(_spec.Node.Columns, posts.ForeignKeys...)
 	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*Post).scanValues(nil, columns)
+		return (*Posts).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Post{config: pq.config}
+		node := &Posts{config: pq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
@@ -383,27 +383,27 @@ func (pq *PostQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Post, e
 	}
 	if query := pq.withUser; query != nil {
 		if err := pq.loadUser(ctx, query, nodes, nil,
-			func(n *Post, e *User) { n.Edges.User = e }); err != nil {
+			func(n *Posts, e *Users) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (pq *PostQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Post, init func(*Post), assign func(*Post, *User)) error {
+func (pq *PostsQuery) loadUser(ctx context.Context, query *UsersQuery, nodes []*Posts, init func(*Posts), assign func(*Posts, *Users)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Post)
+	nodeids := make(map[int][]*Posts)
 	for i := range nodes {
-		if nodes[i].user_posts == nil {
+		if nodes[i].users_posts == nil {
 			continue
 		}
-		fk := *nodes[i].user_posts
+		fk := *nodes[i].users_posts
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(user.IDIn(ids...))
+	query.Where(users.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -411,7 +411,7 @@ func (pq *PostQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Po
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_posts" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "users_posts" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -420,7 +420,7 @@ func (pq *PostQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Po
 	return nil
 }
 
-func (pq *PostQuery) sqlCount(ctx context.Context) (int, error) {
+func (pq *PostsQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := pq.querySpec()
 	_spec.Node.Columns = pq.fields
 	if len(pq.fields) > 0 {
@@ -429,7 +429,7 @@ func (pq *PostQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, pq.driver, _spec)
 }
 
-func (pq *PostQuery) sqlExist(ctx context.Context) (bool, error) {
+func (pq *PostsQuery) sqlExist(ctx context.Context) (bool, error) {
 	switch _, err := pq.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
@@ -440,14 +440,14 @@ func (pq *PostQuery) sqlExist(ctx context.Context) (bool, error) {
 	}
 }
 
-func (pq *PostQuery) querySpec() *sqlgraph.QuerySpec {
+func (pq *PostsQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := &sqlgraph.QuerySpec{
 		Node: &sqlgraph.NodeSpec{
-			Table:   post.Table,
-			Columns: post.Columns,
+			Table:   posts.Table,
+			Columns: posts.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: post.FieldID,
+				Column: posts.FieldID,
 			},
 		},
 		From:   pq.sql,
@@ -458,9 +458,9 @@ func (pq *PostQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := pq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, post.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, posts.FieldID)
 		for i := range fields {
-			if fields[i] != post.FieldID {
+			if fields[i] != posts.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
@@ -488,12 +488,12 @@ func (pq *PostQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (pq *PostQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (pq *PostsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(pq.driver.Dialect())
-	t1 := builder.Table(post.Table)
+	t1 := builder.Table(posts.Table)
 	columns := pq.fields
 	if len(columns) == 0 {
-		columns = post.Columns
+		columns = posts.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if pq.sql != nil {
@@ -520,8 +520,8 @@ func (pq *PostQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// PostGroupBy is the group-by builder for Post entities.
-type PostGroupBy struct {
+// PostsGroupBy is the group-by builder for Posts entities.
+type PostsGroupBy struct {
 	config
 	selector
 	fields []string
@@ -532,13 +532,13 @@ type PostGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (pgb *PostGroupBy) Aggregate(fns ...AggregateFunc) *PostGroupBy {
+func (pgb *PostsGroupBy) Aggregate(fns ...AggregateFunc) *PostsGroupBy {
 	pgb.fns = append(pgb.fns, fns...)
 	return pgb
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (pgb *PostGroupBy) Scan(ctx context.Context, v any) error {
+func (pgb *PostsGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := pgb.path(ctx)
 	if err != nil {
 		return err
@@ -547,9 +547,9 @@ func (pgb *PostGroupBy) Scan(ctx context.Context, v any) error {
 	return pgb.sqlScan(ctx, v)
 }
 
-func (pgb *PostGroupBy) sqlScan(ctx context.Context, v any) error {
+func (pgb *PostsGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range pgb.fields {
-		if !post.ValidColumn(f) {
+		if !posts.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
 		}
 	}
@@ -566,7 +566,7 @@ func (pgb *PostGroupBy) sqlScan(ctx context.Context, v any) error {
 	return sql.ScanSlice(rows, v)
 }
 
-func (pgb *PostGroupBy) sqlQuery() *sql.Selector {
+func (pgb *PostsGroupBy) sqlQuery() *sql.Selector {
 	selector := pgb.sql.Select()
 	aggregation := make([]string, 0, len(pgb.fns))
 	for _, fn := range pgb.fns {
@@ -585,24 +585,24 @@ func (pgb *PostGroupBy) sqlQuery() *sql.Selector {
 	return selector.GroupBy(selector.Columns(pgb.fields...)...)
 }
 
-// PostSelect is the builder for selecting fields of Post entities.
-type PostSelect struct {
-	*PostQuery
+// PostsSelect is the builder for selecting fields of Posts entities.
+type PostsSelect struct {
+	*PostsQuery
 	selector
 	// intermediate query (i.e. traversal path).
 	sql *sql.Selector
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ps *PostSelect) Scan(ctx context.Context, v any) error {
+func (ps *PostsSelect) Scan(ctx context.Context, v any) error {
 	if err := ps.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ps.sql = ps.PostQuery.sqlQuery(ctx)
+	ps.sql = ps.PostsQuery.sqlQuery(ctx)
 	return ps.sqlScan(ctx, v)
 }
 
-func (ps *PostSelect) sqlScan(ctx context.Context, v any) error {
+func (ps *PostsSelect) sqlScan(ctx context.Context, v any) error {
 	rows := &sql.Rows{}
 	query, args := ps.sql.Query()
 	if err := ps.driver.Query(ctx, query, args, rows); err != nil {

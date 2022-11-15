@@ -5,13 +5,13 @@ import (
 
 	"github.com/kyh0703/stock-server/database"
 	"github.com/kyh0703/stock-server/ent"
-	"github.com/kyh0703/stock-server/ent/user"
+	"github.com/kyh0703/stock-server/ent/users"
 )
 
 type UsersRepository struct{}
 
-func (repo *UsersRepository) Insert(ctx context.Context, username, email, password string) (*ent.User, error) {
-	return database.Ent.User.
+func (repo *UsersRepository) Insert(ctx context.Context, username, email, password string) (*ent.Users, error) {
+	return database.Ent.Users.
 		Create().
 		SetUsername(username).
 		SetPassword(password).
@@ -19,23 +19,23 @@ func (repo *UsersRepository) Insert(ctx context.Context, username, email, passwo
 		Save(ctx)
 }
 
-func (repo *UsersRepository) FetchOne(ctx context.Context, id int) (*ent.User, error) {
-	return database.Ent.User.
+func (repo *UsersRepository) FetchOne(ctx context.Context, id int) (*ent.Users, error) {
+	return database.Ent.Users.
 		Query().
-		Where(user.ID(id)).
+		Where(users.ID(id)).
 		Only(ctx)
 }
 
-func (repo *UsersRepository) FetchByEmail(ctx context.Context, email string) (*ent.User, error) {
-	return database.Ent.User.
+func (repo *UsersRepository) FetchByEmail(ctx context.Context, email string) (*ent.Users, error) {
+	return database.Ent.Users.
 		Query().
-		Where(user.Email(email)).
+		Where(users.Email(email)).
 		Only(ctx)
 }
 
 func (repo *UsersRepository) IsExistByEmail(ctx context.Context, email string) (bool, error) {
-	return database.Ent.User.
+	return database.Ent.Users.
 		Query().
-		Where(user.Email(email)).
+		Where(users.Email(email)).
 		Exist(ctx)
 }

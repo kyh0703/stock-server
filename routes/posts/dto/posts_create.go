@@ -1,13 +1,13 @@
 package dto
 
-type PostCreateRequest struct {
+type PostsCreateRequest struct {
 	Title  string   `json:"title" validate:"required"`
 	Body   string   `json:"body" validate:"required"`
 	Tags   []string `json:"tags" validate:"required"`
 	UserID int      `json:"userId"`
 }
 
-type PostCreateResponse struct {
+type PostsCreateResponse struct {
 	ID        int      `json:"id"`
 	Title     string   `json:"title"`
 	Body      string   `json:"body"`

@@ -10,11 +10,11 @@ import (
 )
 
 type postsService struct {
-	postRepo PostsRepository
+	postsRepo PostsRepository
 }
 
-func (svc *postsService) SavePost(c *fiber.Ctx, req *dto.PostCreateRequest) error {
-	post, err := svc.postRepo.Insert(
+func (svc *postsService) SavePost(c *fiber.Ctx, req *dto.PostsCreateRequest) error {
+	post, err := svc.postsRepo.Insert(
 		c.Context(),
 		req.Title,
 		req.Body,
@@ -25,25 +25,24 @@ func (svc *postsService) SavePost(c *fiber.Ctx, req *dto.PostCreateRequest) erro
 		return c.App().ErrorHandler(c, types.ErrUnauthorized)
 	}
 
-	res := &dto.PostCreateResponse{
-		ID:        post.ID,
-		Title:     post.Title,
-		Body:      post.Body,
-		Tags:      post.Tags,
-		PublishAt: post.PublishAt.String(),
-		UserID:    req.UserID,
-	}
+	var res dto.PostsCreateResponse
+	res.ID = post.ID
+	res.Title = post.Title
+	res.Body = post.Body
+	res.Tags = post.Tags
+	res.PublishAt = post.PublishAt.String()
+	res.UserID = post.Edges.User.ID
 
 	return c.Status(fiber.StatusOK).JSON(res)
 }
 
-func (svc *postsService) GetPost(c *fiber.Ctx, req dto.PostFetchRequest) error {
-	post, err := svc.postRepo.FetchOneWithUser(c.Context(), req.ID)
+func (svc *postsService) GetPost(c *fiber.Ctx, req *dto.PostsFetchRequest) error {
+	post, err := svc.postsRepo.FetchOneWithUser(c.Context(), req.ID)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrPostNotExist)
 	}
 
-	var res dto.PostFetchResponse
+	var res dto.PostsFetchResponse
 	res.ID = post.ID
 	res.Title = post.Title
 	res.Body = post.Body
@@ -55,8 +54,8 @@ func (svc *postsService) GetPost(c *fiber.Ctx, req dto.PostFetchRequest) error {
 	return c.Status(fiber.StatusOK).JSON(res)
 }
 
-func (svc *postsService) GetPosts(c *fiber.Ctx, req dto.PostListRequest) error {
-	posts, err := svc.postRepo.FetchPostsWithTagOrUser(
+func (svc *postsService) GetPosts(c *fiber.Ctx, req *dto.PostsListRequest) error {
+	posts, err := svc.postsRepo.FetchPostsWithTagOrUser(
 		c.Context(),
 		req.Tag,
 		req.Username,
@@ -67,7 +66,7 @@ func (svc *postsService) GetPosts(c *fiber.Ctx, req dto.PostListRequest) error {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 
-	count, err := svc.postRepo.CountByNameOrTag(
+	count, err := svc.postsRepo.CountByNameOrTag(
 		c.Context(),
 		req.Tag,
 		req.Username,
@@ -80,12 +79,27 @@ func (svc *postsService) GetPosts(c *fiber.Ctx, req dto.PostListRequest) error {
 		int(math.Ceil(float64(count) / float64(req.Limit))),
 	)
 	c.Response().Header.Set("last-page", lastPage)
-	return c.Status(fiber.StatusOK).JSON(posts)
+
+	var res dto.PostsListResponse
+	for _, v := range posts {
+		var post dto.PostsFetchResponse
+		post.ID = v.ID
+		post.Title = v.Title
+		post.Body = v.Body
+		post.Tags = v.Tags
+		post.PublishAt = v.PublishAt.String()
+		post.UserID = v.Edges.User.ID
+		post.Username = v.Edges.User.Username
+		res.Posts = append(res.Posts, post)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(res)
 }
 
 func (svc *postsService) RemovePost(c *fiber.Ctx, id int) error {
-	if err := svc.postRepo.DeleteById(c.Context(), id); err != nil {
+	if err := svc.postsRepo.DeleteById(c.Context(), id); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
+
 	return c.SendStatus(fiber.StatusNoContent)
 }

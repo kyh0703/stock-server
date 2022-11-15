@@ -15,7 +15,7 @@ var (
 		{Name: "body", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
 		{Name: "publish_at", Type: field.TypeTime},
-		{Name: "user_posts", Type: field.TypeInt, Nullable: true},
+		{Name: "users_posts", Type: field.TypeInt, Nullable: true},
 	}
 	// PostsTable holds the schema information for the "posts" table.
 	PostsTable = &schema.Table{

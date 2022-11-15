@@ -10,78 +10,78 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/kyh0703/stock-server/ent/post"
-	"github.com/kyh0703/stock-server/ent/user"
+	"github.com/kyh0703/stock-server/ent/posts"
+	"github.com/kyh0703/stock-server/ent/users"
 )
 
-// PostCreate is the builder for creating a Post entity.
-type PostCreate struct {
+// PostsCreate is the builder for creating a Posts entity.
+type PostsCreate struct {
 	config
-	mutation *PostMutation
+	mutation *PostsMutation
 	hooks    []Hook
 }
 
 // SetTitle sets the "title" field.
-func (pc *PostCreate) SetTitle(s string) *PostCreate {
+func (pc *PostsCreate) SetTitle(s string) *PostsCreate {
 	pc.mutation.SetTitle(s)
 	return pc
 }
 
 // SetBody sets the "body" field.
-func (pc *PostCreate) SetBody(s string) *PostCreate {
+func (pc *PostsCreate) SetBody(s string) *PostsCreate {
 	pc.mutation.SetBody(s)
 	return pc
 }
 
 // SetTags sets the "tags" field.
-func (pc *PostCreate) SetTags(s []string) *PostCreate {
+func (pc *PostsCreate) SetTags(s []string) *PostsCreate {
 	pc.mutation.SetTags(s)
 	return pc
 }
 
 // SetPublishAt sets the "publishAt" field.
-func (pc *PostCreate) SetPublishAt(t time.Time) *PostCreate {
+func (pc *PostsCreate) SetPublishAt(t time.Time) *PostsCreate {
 	pc.mutation.SetPublishAt(t)
 	return pc
 }
 
 // SetNillablePublishAt sets the "publishAt" field if the given value is not nil.
-func (pc *PostCreate) SetNillablePublishAt(t *time.Time) *PostCreate {
+func (pc *PostsCreate) SetNillablePublishAt(t *time.Time) *PostsCreate {
 	if t != nil {
 		pc.SetPublishAt(*t)
 	}
 	return pc
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (pc *PostCreate) SetUserID(id int) *PostCreate {
+// SetUserID sets the "user" edge to the Users entity by ID.
+func (pc *PostsCreate) SetUserID(id int) *PostsCreate {
 	pc.mutation.SetUserID(id)
 	return pc
 }
 
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (pc *PostCreate) SetNillableUserID(id *int) *PostCreate {
+// SetNillableUserID sets the "user" edge to the Users entity by ID if the given value is not nil.
+func (pc *PostsCreate) SetNillableUserID(id *int) *PostsCreate {
 	if id != nil {
 		pc = pc.SetUserID(*id)
 	}
 	return pc
 }
 
-// SetUser sets the "user" edge to the User entity.
-func (pc *PostCreate) SetUser(u *User) *PostCreate {
+// SetUser sets the "user" edge to the Users entity.
+func (pc *PostsCreate) SetUser(u *Users) *PostsCreate {
 	return pc.SetUserID(u.ID)
 }
 
-// Mutation returns the PostMutation object of the builder.
-func (pc *PostCreate) Mutation() *PostMutation {
+// Mutation returns the PostsMutation object of the builder.
+func (pc *PostsCreate) Mutation() *PostsMutation {
 	return pc.mutation
 }
 
-// Save creates the Post in the database.
-func (pc *PostCreate) Save(ctx context.Context) (*Post, error) {
+// Save creates the Posts in the database.
+func (pc *PostsCreate) Save(ctx context.Context) (*Posts, error) {
 	var (
 		err  error
-		node *Post
+		node *Posts
 	)
 	pc.defaults()
 	if len(pc.hooks) == 0 {
@@ -91,7 +91,7 @@ func (pc *PostCreate) Save(ctx context.Context) (*Post, error) {
 		node, err = pc.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*PostMutation)
+			mutation, ok := m.(*PostsMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
@@ -116,9 +116,9 @@ func (pc *PostCreate) Save(ctx context.Context) (*Post, error) {
 		if err != nil {
 			return nil, err
 		}
-		nv, ok := v.(*Post)
+		nv, ok := v.(*Posts)
 		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from PostMutation", v)
+			return nil, fmt.Errorf("unexpected node type %T returned from PostsMutation", v)
 		}
 		node = nv
 	}
@@ -126,7 +126,7 @@ func (pc *PostCreate) Save(ctx context.Context) (*Post, error) {
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (pc *PostCreate) SaveX(ctx context.Context) *Post {
+func (pc *PostsCreate) SaveX(ctx context.Context) *Posts {
 	v, err := pc.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -135,44 +135,44 @@ func (pc *PostCreate) SaveX(ctx context.Context) *Post {
 }
 
 // Exec executes the query.
-func (pc *PostCreate) Exec(ctx context.Context) error {
+func (pc *PostsCreate) Exec(ctx context.Context) error {
 	_, err := pc.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pc *PostCreate) ExecX(ctx context.Context) {
+func (pc *PostsCreate) ExecX(ctx context.Context) {
 	if err := pc.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (pc *PostCreate) defaults() {
+func (pc *PostsCreate) defaults() {
 	if _, ok := pc.mutation.PublishAt(); !ok {
-		v := post.DefaultPublishAt()
+		v := posts.DefaultPublishAt()
 		pc.mutation.SetPublishAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (pc *PostCreate) check() error {
+func (pc *PostsCreate) check() error {
 	if _, ok := pc.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Post.title"`)}
+		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Posts.title"`)}
 	}
 	if _, ok := pc.mutation.Body(); !ok {
-		return &ValidationError{Name: "body", err: errors.New(`ent: missing required field "Post.body"`)}
+		return &ValidationError{Name: "body", err: errors.New(`ent: missing required field "Posts.body"`)}
 	}
 	if _, ok := pc.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "Post.tags"`)}
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "Posts.tags"`)}
 	}
 	if _, ok := pc.mutation.PublishAt(); !ok {
-		return &ValidationError{Name: "publishAt", err: errors.New(`ent: missing required field "Post.publishAt"`)}
+		return &ValidationError{Name: "publishAt", err: errors.New(`ent: missing required field "Posts.publishAt"`)}
 	}
 	return nil
 }
 
-func (pc *PostCreate) sqlSave(ctx context.Context) (*Post, error) {
+func (pc *PostsCreate) sqlSave(ctx context.Context) (*Posts, error) {
 	_node, _spec := pc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, pc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -185,14 +185,14 @@ func (pc *PostCreate) sqlSave(ctx context.Context) (*Post, error) {
 	return _node, nil
 }
 
-func (pc *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
+func (pc *PostsCreate) createSpec() (*Posts, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Post{config: pc.config}
+		_node = &Posts{config: pc.config}
 		_spec = &sqlgraph.CreateSpec{
-			Table: post.Table,
+			Table: posts.Table,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: post.FieldID,
+				Column: posts.FieldID,
 			},
 		}
 	)
@@ -200,7 +200,7 @@ func (pc *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: post.FieldTitle,
+			Column: posts.FieldTitle,
 		})
 		_node.Title = value
 	}
@@ -208,7 +208,7 @@ func (pc *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: post.FieldBody,
+			Column: posts.FieldBody,
 		})
 		_node.Body = value
 	}
@@ -216,7 +216,7 @@ func (pc *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: post.FieldTags,
+			Column: posts.FieldTags,
 		})
 		_node.Tags = value
 	}
@@ -224,7 +224,7 @@ func (pc *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: post.FieldPublishAt,
+			Column: posts.FieldPublishAt,
 		})
 		_node.PublishAt = value
 	}
@@ -232,42 +232,42 @@ func (pc *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   post.UserTable,
-			Columns: []string{post.UserColumn},
+			Table:   posts.UserTable,
+			Columns: []string{posts.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: user.FieldID,
+					Column: users.FieldID,
 				},
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_posts = &nodes[0]
+		_node.users_posts = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
 
-// PostCreateBulk is the builder for creating many Post entities in bulk.
-type PostCreateBulk struct {
+// PostsCreateBulk is the builder for creating many Posts entities in bulk.
+type PostsCreateBulk struct {
 	config
-	builders []*PostCreate
+	builders []*PostsCreate
 }
 
-// Save creates the Post entities in the database.
-func (pcb *PostCreateBulk) Save(ctx context.Context) ([]*Post, error) {
+// Save creates the Posts entities in the database.
+func (pcb *PostsCreateBulk) Save(ctx context.Context) ([]*Posts, error) {
 	specs := make([]*sqlgraph.CreateSpec, len(pcb.builders))
-	nodes := make([]*Post, len(pcb.builders))
+	nodes := make([]*Posts, len(pcb.builders))
 	mutators := make([]Mutator, len(pcb.builders))
 	for i := range pcb.builders {
 		func(i int, root context.Context) {
 			builder := pcb.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*PostMutation)
+				mutation, ok := m.(*PostsMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -314,7 +314,7 @@ func (pcb *PostCreateBulk) Save(ctx context.Context) ([]*Post, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pcb *PostCreateBulk) SaveX(ctx context.Context) []*Post {
+func (pcb *PostsCreateBulk) SaveX(ctx context.Context) []*Posts {
 	v, err := pcb.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -323,13 +323,13 @@ func (pcb *PostCreateBulk) SaveX(ctx context.Context) []*Post {
 }
 
 // Exec executes the query.
-func (pcb *PostCreateBulk) Exec(ctx context.Context) error {
+func (pcb *PostsCreateBulk) Exec(ctx context.Context) error {
 	_, err := pcb.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pcb *PostCreateBulk) ExecX(ctx context.Context) {
+func (pcb *PostsCreateBulk) ExecX(ctx context.Context) {
 	if err := pcb.Exec(ctx); err != nil {
 		panic(err)
 	}

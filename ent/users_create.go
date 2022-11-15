@@ -10,43 +10,43 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/kyh0703/stock-server/ent/post"
-	"github.com/kyh0703/stock-server/ent/user"
+	"github.com/kyh0703/stock-server/ent/posts"
+	"github.com/kyh0703/stock-server/ent/users"
 )
 
-// UserCreate is the builder for creating a User entity.
-type UserCreate struct {
+// UsersCreate is the builder for creating a Users entity.
+type UsersCreate struct {
 	config
-	mutation *UserMutation
+	mutation *UsersMutation
 	hooks    []Hook
 }
 
 // SetEmail sets the "email" field.
-func (uc *UserCreate) SetEmail(s string) *UserCreate {
+func (uc *UsersCreate) SetEmail(s string) *UsersCreate {
 	uc.mutation.SetEmail(s)
 	return uc
 }
 
 // SetUsername sets the "username" field.
-func (uc *UserCreate) SetUsername(s string) *UserCreate {
+func (uc *UsersCreate) SetUsername(s string) *UsersCreate {
 	uc.mutation.SetUsername(s)
 	return uc
 }
 
 // SetPassword sets the "password" field.
-func (uc *UserCreate) SetPassword(s string) *UserCreate {
+func (uc *UsersCreate) SetPassword(s string) *UsersCreate {
 	uc.mutation.SetPassword(s)
 	return uc
 }
 
 // SetCreateAt sets the "createAt" field.
-func (uc *UserCreate) SetCreateAt(t time.Time) *UserCreate {
+func (uc *UsersCreate) SetCreateAt(t time.Time) *UsersCreate {
 	uc.mutation.SetCreateAt(t)
 	return uc
 }
 
 // SetNillableCreateAt sets the "createAt" field if the given value is not nil.
-func (uc *UserCreate) SetNillableCreateAt(t *time.Time) *UserCreate {
+func (uc *UsersCreate) SetNillableCreateAt(t *time.Time) *UsersCreate {
 	if t != nil {
 		uc.SetCreateAt(*t)
 	}
@@ -54,27 +54,27 @@ func (uc *UserCreate) SetNillableCreateAt(t *time.Time) *UserCreate {
 }
 
 // SetUpdateAt sets the "updateAt" field.
-func (uc *UserCreate) SetUpdateAt(t time.Time) *UserCreate {
+func (uc *UsersCreate) SetUpdateAt(t time.Time) *UsersCreate {
 	uc.mutation.SetUpdateAt(t)
 	return uc
 }
 
 // SetNillableUpdateAt sets the "updateAt" field if the given value is not nil.
-func (uc *UserCreate) SetNillableUpdateAt(t *time.Time) *UserCreate {
+func (uc *UsersCreate) SetNillableUpdateAt(t *time.Time) *UsersCreate {
 	if t != nil {
 		uc.SetUpdateAt(*t)
 	}
 	return uc
 }
 
-// AddPostIDs adds the "posts" edge to the Post entity by IDs.
-func (uc *UserCreate) AddPostIDs(ids ...int) *UserCreate {
+// AddPostIDs adds the "posts" edge to the Posts entity by IDs.
+func (uc *UsersCreate) AddPostIDs(ids ...int) *UsersCreate {
 	uc.mutation.AddPostIDs(ids...)
 	return uc
 }
 
-// AddPosts adds the "posts" edges to the Post entity.
-func (uc *UserCreate) AddPosts(p ...*Post) *UserCreate {
+// AddPosts adds the "posts" edges to the Posts entity.
+func (uc *UsersCreate) AddPosts(p ...*Posts) *UsersCreate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
@@ -82,16 +82,16 @@ func (uc *UserCreate) AddPosts(p ...*Post) *UserCreate {
 	return uc.AddPostIDs(ids...)
 }
 
-// Mutation returns the UserMutation object of the builder.
-func (uc *UserCreate) Mutation() *UserMutation {
+// Mutation returns the UsersMutation object of the builder.
+func (uc *UsersCreate) Mutation() *UsersMutation {
 	return uc.mutation
 }
 
-// Save creates the User in the database.
-func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
+// Save creates the Users in the database.
+func (uc *UsersCreate) Save(ctx context.Context) (*Users, error) {
 	var (
 		err  error
-		node *User
+		node *Users
 	)
 	uc.defaults()
 	if len(uc.hooks) == 0 {
@@ -101,7 +101,7 @@ func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
 		node, err = uc.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*UserMutation)
+			mutation, ok := m.(*UsersMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
@@ -126,9 +126,9 @@ func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
 		if err != nil {
 			return nil, err
 		}
-		nv, ok := v.(*User)
+		nv, ok := v.(*Users)
 		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from UserMutation", v)
+			return nil, fmt.Errorf("unexpected node type %T returned from UsersMutation", v)
 		}
 		node = nv
 	}
@@ -136,7 +136,7 @@ func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (uc *UserCreate) SaveX(ctx context.Context) *User {
+func (uc *UsersCreate) SaveX(ctx context.Context) *Users {
 	v, err := uc.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -145,61 +145,61 @@ func (uc *UserCreate) SaveX(ctx context.Context) *User {
 }
 
 // Exec executes the query.
-func (uc *UserCreate) Exec(ctx context.Context) error {
+func (uc *UsersCreate) Exec(ctx context.Context) error {
 	_, err := uc.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (uc *UserCreate) ExecX(ctx context.Context) {
+func (uc *UsersCreate) ExecX(ctx context.Context) {
 	if err := uc.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (uc *UserCreate) defaults() {
+func (uc *UsersCreate) defaults() {
 	if _, ok := uc.mutation.CreateAt(); !ok {
-		v := user.DefaultCreateAt()
+		v := users.DefaultCreateAt()
 		uc.mutation.SetCreateAt(v)
 	}
 	if _, ok := uc.mutation.UpdateAt(); !ok {
-		v := user.DefaultUpdateAt()
+		v := users.DefaultUpdateAt()
 		uc.mutation.SetUpdateAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (uc *UserCreate) check() error {
+func (uc *UsersCreate) check() error {
 	if _, ok := uc.mutation.Email(); !ok {
-		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
+		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "Users.email"`)}
 	}
 	if v, ok := uc.mutation.Email(); ok {
-		if err := user.EmailValidator(v); err != nil {
-			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
+		if err := users.EmailValidator(v); err != nil {
+			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "Users.email": %w`, err)}
 		}
 	}
 	if _, ok := uc.mutation.Username(); !ok {
-		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "User.username"`)}
+		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "Users.username"`)}
 	}
 	if v, ok := uc.mutation.Username(); ok {
-		if err := user.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
+		if err := users.UsernameValidator(v); err != nil {
+			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "Users.username": %w`, err)}
 		}
 	}
 	if _, ok := uc.mutation.Password(); !ok {
-		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "User.password"`)}
+		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "Users.password"`)}
 	}
 	if _, ok := uc.mutation.CreateAt(); !ok {
-		return &ValidationError{Name: "createAt", err: errors.New(`ent: missing required field "User.createAt"`)}
+		return &ValidationError{Name: "createAt", err: errors.New(`ent: missing required field "Users.createAt"`)}
 	}
 	if _, ok := uc.mutation.UpdateAt(); !ok {
-		return &ValidationError{Name: "updateAt", err: errors.New(`ent: missing required field "User.updateAt"`)}
+		return &ValidationError{Name: "updateAt", err: errors.New(`ent: missing required field "Users.updateAt"`)}
 	}
 	return nil
 }
 
-func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
+func (uc *UsersCreate) sqlSave(ctx context.Context) (*Users, error) {
 	_node, _spec := uc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, uc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -212,14 +212,14 @@ func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
 	return _node, nil
 }
 
-func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
+func (uc *UsersCreate) createSpec() (*Users, *sqlgraph.CreateSpec) {
 	var (
-		_node = &User{config: uc.config}
+		_node = &Users{config: uc.config}
 		_spec = &sqlgraph.CreateSpec{
-			Table: user.Table,
+			Table: users.Table,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: user.FieldID,
+				Column: users.FieldID,
 			},
 		}
 	)
@@ -227,7 +227,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldEmail,
+			Column: users.FieldEmail,
 		})
 		_node.Email = value
 	}
@@ -235,7 +235,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldUsername,
+			Column: users.FieldUsername,
 		})
 		_node.Username = value
 	}
@@ -243,7 +243,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldPassword,
+			Column: users.FieldPassword,
 		})
 		_node.Password = value
 	}
@@ -251,7 +251,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: user.FieldCreateAt,
+			Column: users.FieldCreateAt,
 		})
 		_node.CreateAt = value
 	}
@@ -259,7 +259,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: user.FieldUpdateAt,
+			Column: users.FieldUpdateAt,
 		})
 		_node.UpdateAt = value
 	}
@@ -267,13 +267,13 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.PostsTable,
-			Columns: []string{user.PostsColumn},
+			Table:   users.PostsTable,
+			Columns: []string{users.PostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: post.FieldID,
+					Column: posts.FieldID,
 				},
 			},
 		}
@@ -285,23 +285,23 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// UserCreateBulk is the builder for creating many User entities in bulk.
-type UserCreateBulk struct {
+// UsersCreateBulk is the builder for creating many Users entities in bulk.
+type UsersCreateBulk struct {
 	config
-	builders []*UserCreate
+	builders []*UsersCreate
 }
 
-// Save creates the User entities in the database.
-func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
+// Save creates the Users entities in the database.
+func (ucb *UsersCreateBulk) Save(ctx context.Context) ([]*Users, error) {
 	specs := make([]*sqlgraph.CreateSpec, len(ucb.builders))
-	nodes := make([]*User, len(ucb.builders))
+	nodes := make([]*Users, len(ucb.builders))
 	mutators := make([]Mutator, len(ucb.builders))
 	for i := range ucb.builders {
 		func(i int, root context.Context) {
 			builder := ucb.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*UserMutation)
+				mutation, ok := m.(*UsersMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -348,7 +348,7 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ucb *UserCreateBulk) SaveX(ctx context.Context) []*User {
+func (ucb *UsersCreateBulk) SaveX(ctx context.Context) []*Users {
 	v, err := ucb.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -357,13 +357,13 @@ func (ucb *UserCreateBulk) SaveX(ctx context.Context) []*User {
 }
 
 // Exec executes the query.
-func (ucb *UserCreateBulk) Exec(ctx context.Context) error {
+func (ucb *UsersCreateBulk) Exec(ctx context.Context) error {
 	_, err := ucb.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ucb *UserCreateBulk) ExecX(ctx context.Context) {
+func (ucb *UsersCreateBulk) ExecX(ctx context.Context) {
 	if err := ucb.Exec(ctx); err != nil {
 		panic(err)
 	}

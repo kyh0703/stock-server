@@ -10,8 +10,8 @@ import (
 
 	"github.com/kyh0703/stock-server/ent/migrate"
 
-	"github.com/kyh0703/stock-server/ent/post"
-	"github.com/kyh0703/stock-server/ent/user"
+	"github.com/kyh0703/stock-server/ent/posts"
+	"github.com/kyh0703/stock-server/ent/users"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -23,10 +23,10 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// Post is the client for interacting with the Post builders.
-	Post *PostClient
-	// User is the client for interacting with the User builders.
-	User *UserClient
+	// Posts is the client for interacting with the Posts builders.
+	Posts *PostsClient
+	// Users is the client for interacting with the Users builders.
+	Users *UsersClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -40,8 +40,8 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.Post = NewPostClient(c.config)
-	c.User = NewUserClient(c.config)
+	c.Posts = NewPostsClient(c.config)
+	c.Users = NewUsersClient(c.config)
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -75,8 +75,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:    ctx,
 		config: cfg,
-		Post:   NewPostClient(cfg),
-		User:   NewUserClient(cfg),
+		Posts:  NewPostsClient(cfg),
+		Users:  NewUsersClient(cfg),
 	}, nil
 }
 
@@ -96,15 +96,15 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:    ctx,
 		config: cfg,
-		Post:   NewPostClient(cfg),
-		User:   NewUserClient(cfg),
+		Posts:  NewPostsClient(cfg),
+		Users:  NewUsersClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Post.
+//		Posts.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -126,88 +126,88 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Post.Use(hooks...)
-	c.User.Use(hooks...)
+	c.Posts.Use(hooks...)
+	c.Users.Use(hooks...)
 }
 
-// PostClient is a client for the Post schema.
-type PostClient struct {
+// PostsClient is a client for the Posts schema.
+type PostsClient struct {
 	config
 }
 
-// NewPostClient returns a client for the Post from the given config.
-func NewPostClient(c config) *PostClient {
-	return &PostClient{config: c}
+// NewPostsClient returns a client for the Posts from the given config.
+func NewPostsClient(c config) *PostsClient {
+	return &PostsClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `post.Hooks(f(g(h())))`.
-func (c *PostClient) Use(hooks ...Hook) {
-	c.hooks.Post = append(c.hooks.Post, hooks...)
+// A call to `Use(f, g, h)` equals to `posts.Hooks(f(g(h())))`.
+func (c *PostsClient) Use(hooks ...Hook) {
+	c.hooks.Posts = append(c.hooks.Posts, hooks...)
 }
 
-// Create returns a builder for creating a Post entity.
-func (c *PostClient) Create() *PostCreate {
-	mutation := newPostMutation(c.config, OpCreate)
-	return &PostCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Posts entity.
+func (c *PostsClient) Create() *PostsCreate {
+	mutation := newPostsMutation(c.config, OpCreate)
+	return &PostsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Post entities.
-func (c *PostClient) CreateBulk(builders ...*PostCreate) *PostCreateBulk {
-	return &PostCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Posts entities.
+func (c *PostsClient) CreateBulk(builders ...*PostsCreate) *PostsCreateBulk {
+	return &PostsCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Post.
-func (c *PostClient) Update() *PostUpdate {
-	mutation := newPostMutation(c.config, OpUpdate)
-	return &PostUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Posts.
+func (c *PostsClient) Update() *PostsUpdate {
+	mutation := newPostsMutation(c.config, OpUpdate)
+	return &PostsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *PostClient) UpdateOne(po *Post) *PostUpdateOne {
-	mutation := newPostMutation(c.config, OpUpdateOne, withPost(po))
-	return &PostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *PostsClient) UpdateOne(po *Posts) *PostsUpdateOne {
+	mutation := newPostsMutation(c.config, OpUpdateOne, withPosts(po))
+	return &PostsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *PostClient) UpdateOneID(id int) *PostUpdateOne {
-	mutation := newPostMutation(c.config, OpUpdateOne, withPostID(id))
-	return &PostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *PostsClient) UpdateOneID(id int) *PostsUpdateOne {
+	mutation := newPostsMutation(c.config, OpUpdateOne, withPostsID(id))
+	return &PostsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Post.
-func (c *PostClient) Delete() *PostDelete {
-	mutation := newPostMutation(c.config, OpDelete)
-	return &PostDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Posts.
+func (c *PostsClient) Delete() *PostsDelete {
+	mutation := newPostsMutation(c.config, OpDelete)
+	return &PostsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *PostClient) DeleteOne(po *Post) *PostDeleteOne {
+func (c *PostsClient) DeleteOne(po *Posts) *PostsDeleteOne {
 	return c.DeleteOneID(po.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *PostClient) DeleteOneID(id int) *PostDeleteOne {
-	builder := c.Delete().Where(post.ID(id))
+func (c *PostsClient) DeleteOneID(id int) *PostsDeleteOne {
+	builder := c.Delete().Where(posts.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &PostDeleteOne{builder}
+	return &PostsDeleteOne{builder}
 }
 
-// Query returns a query builder for Post.
-func (c *PostClient) Query() *PostQuery {
-	return &PostQuery{
+// Query returns a query builder for Posts.
+func (c *PostsClient) Query() *PostsQuery {
+	return &PostsQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Post entity by its id.
-func (c *PostClient) Get(ctx context.Context, id int) (*Post, error) {
-	return c.Query().Where(post.ID(id)).Only(ctx)
+// Get returns a Posts entity by its id.
+func (c *PostsClient) Get(ctx context.Context, id int) (*Posts, error) {
+	return c.Query().Where(posts.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *PostClient) GetX(ctx context.Context, id int) *Post {
+func (c *PostsClient) GetX(ctx context.Context, id int) *Posts {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -215,15 +215,15 @@ func (c *PostClient) GetX(ctx context.Context, id int) *Post {
 	return obj
 }
 
-// QueryUser queries the user edge of a Post.
-func (c *PostClient) QueryUser(po *Post) *UserQuery {
-	query := &UserQuery{config: c.config}
+// QueryUser queries the user edge of a Posts.
+func (c *PostsClient) QueryUser(po *Posts) *UsersQuery {
+	query := &UsersQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := po.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(post.Table, post.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, post.UserTable, post.UserColumn),
+			sqlgraph.From(posts.Table, posts.FieldID, id),
+			sqlgraph.To(users.Table, users.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, posts.UserTable, posts.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(po.driver.Dialect(), step)
 		return fromV, nil
@@ -232,88 +232,88 @@ func (c *PostClient) QueryUser(po *Post) *UserQuery {
 }
 
 // Hooks returns the client hooks.
-func (c *PostClient) Hooks() []Hook {
-	return c.hooks.Post
+func (c *PostsClient) Hooks() []Hook {
+	return c.hooks.Posts
 }
 
-// UserClient is a client for the User schema.
-type UserClient struct {
+// UsersClient is a client for the Users schema.
+type UsersClient struct {
 	config
 }
 
-// NewUserClient returns a client for the User from the given config.
-func NewUserClient(c config) *UserClient {
-	return &UserClient{config: c}
+// NewUsersClient returns a client for the Users from the given config.
+func NewUsersClient(c config) *UsersClient {
+	return &UsersClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `user.Hooks(f(g(h())))`.
-func (c *UserClient) Use(hooks ...Hook) {
-	c.hooks.User = append(c.hooks.User, hooks...)
+// A call to `Use(f, g, h)` equals to `users.Hooks(f(g(h())))`.
+func (c *UsersClient) Use(hooks ...Hook) {
+	c.hooks.Users = append(c.hooks.Users, hooks...)
 }
 
-// Create returns a builder for creating a User entity.
-func (c *UserClient) Create() *UserCreate {
-	mutation := newUserMutation(c.config, OpCreate)
-	return &UserCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Users entity.
+func (c *UsersClient) Create() *UsersCreate {
+	mutation := newUsersMutation(c.config, OpCreate)
+	return &UsersCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of User entities.
-func (c *UserClient) CreateBulk(builders ...*UserCreate) *UserCreateBulk {
-	return &UserCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Users entities.
+func (c *UsersClient) CreateBulk(builders ...*UsersCreate) *UsersCreateBulk {
+	return &UsersCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for User.
-func (c *UserClient) Update() *UserUpdate {
-	mutation := newUserMutation(c.config, OpUpdate)
-	return &UserUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Users.
+func (c *UsersClient) Update() *UsersUpdate {
+	mutation := newUsersMutation(c.config, OpUpdate)
+	return &UsersUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *UserClient) UpdateOne(u *User) *UserUpdateOne {
-	mutation := newUserMutation(c.config, OpUpdateOne, withUser(u))
-	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *UsersClient) UpdateOne(u *Users) *UsersUpdateOne {
+	mutation := newUsersMutation(c.config, OpUpdateOne, withUsers(u))
+	return &UsersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *UserClient) UpdateOneID(id int) *UserUpdateOne {
-	mutation := newUserMutation(c.config, OpUpdateOne, withUserID(id))
-	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *UsersClient) UpdateOneID(id int) *UsersUpdateOne {
+	mutation := newUsersMutation(c.config, OpUpdateOne, withUsersID(id))
+	return &UsersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for User.
-func (c *UserClient) Delete() *UserDelete {
-	mutation := newUserMutation(c.config, OpDelete)
-	return &UserDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Users.
+func (c *UsersClient) Delete() *UsersDelete {
+	mutation := newUsersMutation(c.config, OpDelete)
+	return &UsersDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *UserClient) DeleteOne(u *User) *UserDeleteOne {
+func (c *UsersClient) DeleteOne(u *Users) *UsersDeleteOne {
 	return c.DeleteOneID(u.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *UserClient) DeleteOneID(id int) *UserDeleteOne {
-	builder := c.Delete().Where(user.ID(id))
+func (c *UsersClient) DeleteOneID(id int) *UsersDeleteOne {
+	builder := c.Delete().Where(users.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &UserDeleteOne{builder}
+	return &UsersDeleteOne{builder}
 }
 
-// Query returns a query builder for User.
-func (c *UserClient) Query() *UserQuery {
-	return &UserQuery{
+// Query returns a query builder for Users.
+func (c *UsersClient) Query() *UsersQuery {
+	return &UsersQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a User entity by its id.
-func (c *UserClient) Get(ctx context.Context, id int) (*User, error) {
-	return c.Query().Where(user.ID(id)).Only(ctx)
+// Get returns a Users entity by its id.
+func (c *UsersClient) Get(ctx context.Context, id int) (*Users, error) {
+	return c.Query().Where(users.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *UserClient) GetX(ctx context.Context, id int) *User {
+func (c *UsersClient) GetX(ctx context.Context, id int) *Users {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -321,15 +321,15 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 	return obj
 }
 
-// QueryPosts queries the posts edge of a User.
-func (c *UserClient) QueryPosts(u *User) *PostQuery {
-	query := &PostQuery{config: c.config}
+// QueryPosts queries the posts edge of a Users.
+func (c *UsersClient) QueryPosts(u *Users) *PostsQuery {
+	query := &PostsQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(post.Table, post.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.PostsTable, user.PostsColumn),
+			sqlgraph.From(users.Table, users.FieldID, id),
+			sqlgraph.To(posts.Table, posts.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, users.PostsTable, users.PostsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil
@@ -338,6 +338,6 @@ func (c *UserClient) QueryPosts(u *User) *PostQuery {
 }
 
 // Hooks returns the client hooks.
-func (c *UserClient) Hooks() []Hook {
-	return c.hooks.User
+func (c *UsersClient) Hooks() []Hook {
+	return c.hooks.Users
 }

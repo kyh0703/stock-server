@@ -11,88 +11,88 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/kyh0703/stock-server/ent/post"
+	"github.com/kyh0703/stock-server/ent/posts"
 	"github.com/kyh0703/stock-server/ent/predicate"
-	"github.com/kyh0703/stock-server/ent/user"
+	"github.com/kyh0703/stock-server/ent/users"
 )
 
-// PostUpdate is the builder for updating Post entities.
-type PostUpdate struct {
+// PostsUpdate is the builder for updating Posts entities.
+type PostsUpdate struct {
 	config
 	hooks    []Hook
-	mutation *PostMutation
+	mutation *PostsMutation
 }
 
-// Where appends a list predicates to the PostUpdate builder.
-func (pu *PostUpdate) Where(ps ...predicate.Post) *PostUpdate {
+// Where appends a list predicates to the PostsUpdate builder.
+func (pu *PostsUpdate) Where(ps ...predicate.Posts) *PostsUpdate {
 	pu.mutation.Where(ps...)
 	return pu
 }
 
 // SetTitle sets the "title" field.
-func (pu *PostUpdate) SetTitle(s string) *PostUpdate {
+func (pu *PostsUpdate) SetTitle(s string) *PostsUpdate {
 	pu.mutation.SetTitle(s)
 	return pu
 }
 
 // SetBody sets the "body" field.
-func (pu *PostUpdate) SetBody(s string) *PostUpdate {
+func (pu *PostsUpdate) SetBody(s string) *PostsUpdate {
 	pu.mutation.SetBody(s)
 	return pu
 }
 
 // SetTags sets the "tags" field.
-func (pu *PostUpdate) SetTags(s []string) *PostUpdate {
+func (pu *PostsUpdate) SetTags(s []string) *PostsUpdate {
 	pu.mutation.SetTags(s)
 	return pu
 }
 
 // SetPublishAt sets the "publishAt" field.
-func (pu *PostUpdate) SetPublishAt(t time.Time) *PostUpdate {
+func (pu *PostsUpdate) SetPublishAt(t time.Time) *PostsUpdate {
 	pu.mutation.SetPublishAt(t)
 	return pu
 }
 
 // SetNillablePublishAt sets the "publishAt" field if the given value is not nil.
-func (pu *PostUpdate) SetNillablePublishAt(t *time.Time) *PostUpdate {
+func (pu *PostsUpdate) SetNillablePublishAt(t *time.Time) *PostsUpdate {
 	if t != nil {
 		pu.SetPublishAt(*t)
 	}
 	return pu
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (pu *PostUpdate) SetUserID(id int) *PostUpdate {
+// SetUserID sets the "user" edge to the Users entity by ID.
+func (pu *PostsUpdate) SetUserID(id int) *PostsUpdate {
 	pu.mutation.SetUserID(id)
 	return pu
 }
 
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (pu *PostUpdate) SetNillableUserID(id *int) *PostUpdate {
+// SetNillableUserID sets the "user" edge to the Users entity by ID if the given value is not nil.
+func (pu *PostsUpdate) SetNillableUserID(id *int) *PostsUpdate {
 	if id != nil {
 		pu = pu.SetUserID(*id)
 	}
 	return pu
 }
 
-// SetUser sets the "user" edge to the User entity.
-func (pu *PostUpdate) SetUser(u *User) *PostUpdate {
+// SetUser sets the "user" edge to the Users entity.
+func (pu *PostsUpdate) SetUser(u *Users) *PostsUpdate {
 	return pu.SetUserID(u.ID)
 }
 
-// Mutation returns the PostMutation object of the builder.
-func (pu *PostUpdate) Mutation() *PostMutation {
+// Mutation returns the PostsMutation object of the builder.
+func (pu *PostsUpdate) Mutation() *PostsMutation {
 	return pu.mutation
 }
 
-// ClearUser clears the "user" edge to the User entity.
-func (pu *PostUpdate) ClearUser() *PostUpdate {
+// ClearUser clears the "user" edge to the Users entity.
+func (pu *PostsUpdate) ClearUser() *PostsUpdate {
 	pu.mutation.ClearUser()
 	return pu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (pu *PostUpdate) Save(ctx context.Context) (int, error) {
+func (pu *PostsUpdate) Save(ctx context.Context) (int, error) {
 	var (
 		err      error
 		affected int
@@ -101,7 +101,7 @@ func (pu *PostUpdate) Save(ctx context.Context) (int, error) {
 		affected, err = pu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*PostMutation)
+			mutation, ok := m.(*PostsMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
@@ -124,7 +124,7 @@ func (pu *PostUpdate) Save(ctx context.Context) (int, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pu *PostUpdate) SaveX(ctx context.Context) int {
+func (pu *PostsUpdate) SaveX(ctx context.Context) int {
 	affected, err := pu.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -133,26 +133,26 @@ func (pu *PostUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (pu *PostUpdate) Exec(ctx context.Context) error {
+func (pu *PostsUpdate) Exec(ctx context.Context) error {
 	_, err := pu.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pu *PostUpdate) ExecX(ctx context.Context) {
+func (pu *PostsUpdate) ExecX(ctx context.Context) {
 	if err := pu.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (pu *PostUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (pu *PostsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
-			Table:   post.Table,
-			Columns: post.Columns,
+			Table:   posts.Table,
+			Columns: posts.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: post.FieldID,
+				Column: posts.FieldID,
 			},
 		},
 	}
@@ -167,41 +167,41 @@ func (pu *PostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: post.FieldTitle,
+			Column: posts.FieldTitle,
 		})
 	}
 	if value, ok := pu.mutation.Body(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: post.FieldBody,
+			Column: posts.FieldBody,
 		})
 	}
 	if value, ok := pu.mutation.Tags(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: post.FieldTags,
+			Column: posts.FieldTags,
 		})
 	}
 	if value, ok := pu.mutation.PublishAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: post.FieldPublishAt,
+			Column: posts.FieldPublishAt,
 		})
 	}
 	if pu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   post.UserTable,
-			Columns: []string{post.UserColumn},
+			Table:   posts.UserTable,
+			Columns: []string{posts.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: user.FieldID,
+					Column: users.FieldID,
 				},
 			},
 		}
@@ -211,13 +211,13 @@ func (pu *PostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   post.UserTable,
-			Columns: []string{post.UserColumn},
+			Table:   posts.UserTable,
+			Columns: []string{posts.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: user.FieldID,
+					Column: users.FieldID,
 				},
 			},
 		}
@@ -228,7 +228,7 @@ func (pu *PostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{post.Label}
+			err = &NotFoundError{posts.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -237,94 +237,94 @@ func (pu *PostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	return n, nil
 }
 
-// PostUpdateOne is the builder for updating a single Post entity.
-type PostUpdateOne struct {
+// PostsUpdateOne is the builder for updating a single Posts entity.
+type PostsUpdateOne struct {
 	config
 	fields   []string
 	hooks    []Hook
-	mutation *PostMutation
+	mutation *PostsMutation
 }
 
 // SetTitle sets the "title" field.
-func (puo *PostUpdateOne) SetTitle(s string) *PostUpdateOne {
+func (puo *PostsUpdateOne) SetTitle(s string) *PostsUpdateOne {
 	puo.mutation.SetTitle(s)
 	return puo
 }
 
 // SetBody sets the "body" field.
-func (puo *PostUpdateOne) SetBody(s string) *PostUpdateOne {
+func (puo *PostsUpdateOne) SetBody(s string) *PostsUpdateOne {
 	puo.mutation.SetBody(s)
 	return puo
 }
 
 // SetTags sets the "tags" field.
-func (puo *PostUpdateOne) SetTags(s []string) *PostUpdateOne {
+func (puo *PostsUpdateOne) SetTags(s []string) *PostsUpdateOne {
 	puo.mutation.SetTags(s)
 	return puo
 }
 
 // SetPublishAt sets the "publishAt" field.
-func (puo *PostUpdateOne) SetPublishAt(t time.Time) *PostUpdateOne {
+func (puo *PostsUpdateOne) SetPublishAt(t time.Time) *PostsUpdateOne {
 	puo.mutation.SetPublishAt(t)
 	return puo
 }
 
 // SetNillablePublishAt sets the "publishAt" field if the given value is not nil.
-func (puo *PostUpdateOne) SetNillablePublishAt(t *time.Time) *PostUpdateOne {
+func (puo *PostsUpdateOne) SetNillablePublishAt(t *time.Time) *PostsUpdateOne {
 	if t != nil {
 		puo.SetPublishAt(*t)
 	}
 	return puo
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (puo *PostUpdateOne) SetUserID(id int) *PostUpdateOne {
+// SetUserID sets the "user" edge to the Users entity by ID.
+func (puo *PostsUpdateOne) SetUserID(id int) *PostsUpdateOne {
 	puo.mutation.SetUserID(id)
 	return puo
 }
 
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (puo *PostUpdateOne) SetNillableUserID(id *int) *PostUpdateOne {
+// SetNillableUserID sets the "user" edge to the Users entity by ID if the given value is not nil.
+func (puo *PostsUpdateOne) SetNillableUserID(id *int) *PostsUpdateOne {
 	if id != nil {
 		puo = puo.SetUserID(*id)
 	}
 	return puo
 }
 
-// SetUser sets the "user" edge to the User entity.
-func (puo *PostUpdateOne) SetUser(u *User) *PostUpdateOne {
+// SetUser sets the "user" edge to the Users entity.
+func (puo *PostsUpdateOne) SetUser(u *Users) *PostsUpdateOne {
 	return puo.SetUserID(u.ID)
 }
 
-// Mutation returns the PostMutation object of the builder.
-func (puo *PostUpdateOne) Mutation() *PostMutation {
+// Mutation returns the PostsMutation object of the builder.
+func (puo *PostsUpdateOne) Mutation() *PostsMutation {
 	return puo.mutation
 }
 
-// ClearUser clears the "user" edge to the User entity.
-func (puo *PostUpdateOne) ClearUser() *PostUpdateOne {
+// ClearUser clears the "user" edge to the Users entity.
+func (puo *PostsUpdateOne) ClearUser() *PostsUpdateOne {
 	puo.mutation.ClearUser()
 	return puo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (puo *PostUpdateOne) Select(field string, fields ...string) *PostUpdateOne {
+func (puo *PostsUpdateOne) Select(field string, fields ...string) *PostsUpdateOne {
 	puo.fields = append([]string{field}, fields...)
 	return puo
 }
 
-// Save executes the query and returns the updated Post entity.
-func (puo *PostUpdateOne) Save(ctx context.Context) (*Post, error) {
+// Save executes the query and returns the updated Posts entity.
+func (puo *PostsUpdateOne) Save(ctx context.Context) (*Posts, error) {
 	var (
 		err  error
-		node *Post
+		node *Posts
 	)
 	if len(puo.hooks) == 0 {
 		node, err = puo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*PostMutation)
+			mutation, ok := m.(*PostsMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
@@ -343,9 +343,9 @@ func (puo *PostUpdateOne) Save(ctx context.Context) (*Post, error) {
 		if err != nil {
 			return nil, err
 		}
-		nv, ok := v.(*Post)
+		nv, ok := v.(*Posts)
 		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from PostMutation", v)
+			return nil, fmt.Errorf("unexpected node type %T returned from PostsMutation", v)
 		}
 		node = nv
 	}
@@ -353,7 +353,7 @@ func (puo *PostUpdateOne) Save(ctx context.Context) (*Post, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (puo *PostUpdateOne) SaveX(ctx context.Context) *Post {
+func (puo *PostsUpdateOne) SaveX(ctx context.Context) *Posts {
 	node, err := puo.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -362,42 +362,42 @@ func (puo *PostUpdateOne) SaveX(ctx context.Context) *Post {
 }
 
 // Exec executes the query on the entity.
-func (puo *PostUpdateOne) Exec(ctx context.Context) error {
+func (puo *PostsUpdateOne) Exec(ctx context.Context) error {
 	_, err := puo.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (puo *PostUpdateOne) ExecX(ctx context.Context) {
+func (puo *PostsUpdateOne) ExecX(ctx context.Context) {
 	if err := puo.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (puo *PostUpdateOne) sqlSave(ctx context.Context) (_node *Post, err error) {
+func (puo *PostsUpdateOne) sqlSave(ctx context.Context) (_node *Posts, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
-			Table:   post.Table,
-			Columns: post.Columns,
+			Table:   posts.Table,
+			Columns: posts.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: post.FieldID,
+				Column: posts.FieldID,
 			},
 		},
 	}
 	id, ok := puo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Post.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Posts.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := puo.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, post.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, posts.FieldID)
 		for _, f := range fields {
-			if !post.ValidColumn(f) {
+			if !posts.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != post.FieldID {
+			if f != posts.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)
 			}
 		}
@@ -413,41 +413,41 @@ func (puo *PostUpdateOne) sqlSave(ctx context.Context) (_node *Post, err error) 
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: post.FieldTitle,
+			Column: posts.FieldTitle,
 		})
 	}
 	if value, ok := puo.mutation.Body(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: post.FieldBody,
+			Column: posts.FieldBody,
 		})
 	}
 	if value, ok := puo.mutation.Tags(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: post.FieldTags,
+			Column: posts.FieldTags,
 		})
 	}
 	if value, ok := puo.mutation.PublishAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: post.FieldPublishAt,
+			Column: posts.FieldPublishAt,
 		})
 	}
 	if puo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   post.UserTable,
-			Columns: []string{post.UserColumn},
+			Table:   posts.UserTable,
+			Columns: []string{posts.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: user.FieldID,
+					Column: users.FieldID,
 				},
 			},
 		}
@@ -457,13 +457,13 @@ func (puo *PostUpdateOne) sqlSave(ctx context.Context) (_node *Post, err error) 
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   post.UserTable,
-			Columns: []string{post.UserColumn},
+			Table:   posts.UserTable,
+			Columns: []string{posts.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: user.FieldID,
+					Column: users.FieldID,
 				},
 			},
 		}
@@ -472,12 +472,12 @@ func (puo *PostUpdateOne) sqlSave(ctx context.Context) (_node *Post, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_node = &Post{config: puo.config}
+	_node = &Posts{config: puo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, puo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{post.Label}
+			err = &NotFoundError{posts.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}

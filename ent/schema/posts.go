@@ -9,12 +9,12 @@ import (
 )
 
 // Post holds the schema definition for the Post entity.
-type Post struct {
+type Posts struct {
 	ent.Schema
 }
 
 // Fields of the Post.
-func (Post) Fields() []ent.Field {
+func (Posts) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("title"),
 		field.String("body"),
@@ -26,9 +26,9 @@ func (Post) Fields() []ent.Field {
 }
 
 // Edges of the Post.
-func (Post) Edges() []ent.Edge {
+func (Posts) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("user", User.Type).
+		edge.From("user", Users.Type).
 			Ref("posts").
 			Unique(),
 	}

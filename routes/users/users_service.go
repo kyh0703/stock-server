@@ -15,7 +15,7 @@ type UsersService struct {
 	authSvc   auth.AuthService
 }
 
-func (svc *UsersService) Register(c *fiber.Ctx, req *dto.UserRegisterRequest) error {
+func (svc *UsersService) Register(c *fiber.Ctx, req *dto.UsersRegisterRequest) error {
 	if req.Password != req.PasswordConfirm {
 		return c.App().ErrorHandler(c, types.ErrPasswordNotCompareConfirm)
 	}
@@ -44,7 +44,7 @@ func (svc *UsersService) Register(c *fiber.Ctx, req *dto.UserRegisterRequest) er
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UserLoginRequest) error {
+func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UsersLoginRequest) error {
 	user, err := svc.usersRepo.FetchByEmail(c.Context(), req.Email)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrUserExist)
@@ -60,13 +60,14 @@ func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UserLoginRequest) error {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 
-	res := &dto.UserLoginResponse{
+	res := &dto.UsersLoginResponse{
 		ID:           user.ID,
 		Email:        user.Email,
 		Username:     user.Username,
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
 	}
+
 	return c.JSON(res)
 }
 
@@ -77,13 +78,13 @@ func (svc *UsersService) Logout(c *fiber.Ctx, token string) error {
 	return c.SendStatus(fiber.StatusNoContent)
 }
 
-func (svc *UsersService) GetUserDetail(c *fiber.Ctx, req *dto.UserProfileRequest) error {
+func (svc *UsersService) GetUserDetail(c *fiber.Ctx, req *dto.UsersProfileRequest) error {
 	user, err := svc.usersRepo.FetchOne(c.Context(), req.ID)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrUserNotExist)
 	}
 
-	res := &dto.UserProfileResponse{
+	res := &dto.UsersProfileResponse{
 		ID:       user.ID,
 		Email:    user.Email,
 		Username: user.Username,
@@ -91,7 +92,7 @@ func (svc *UsersService) GetUserDetail(c *fiber.Ctx, req *dto.UserProfileRequest
 	return c.JSON(res)
 }
 
-func (svc *UsersService) RefreshToken(c *fiber.Ctx, req *dto.RefreshTokenRequest) error {
+func (svc *UsersService) RefreshToken(c *fiber.Ctx, req *dto.UsersRefreshRequest) error {
 	token, err := svc.authSvc.Refresh(req.RefreshToken)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
@@ -104,7 +105,7 @@ func (svc *UsersService) RefreshToken(c *fiber.Ctx, req *dto.RefreshTokenRequest
 	cookie.Secure = true
 	c.Cookie(cookie)
 
-	res := &dto.RefreshTokenResponse{
+	res := &dto.UsersRefreshResponse{
 		AccessToken: token.AccessToken,
 	}
 	return c.JSON(res)

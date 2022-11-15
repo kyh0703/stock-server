@@ -11,70 +11,56 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/kyh0703/stock-server/ent/post"
+	"github.com/kyh0703/stock-server/ent/posts"
 	"github.com/kyh0703/stock-server/ent/predicate"
-	"github.com/kyh0703/stock-server/ent/user"
+	"github.com/kyh0703/stock-server/ent/users"
 )
 
-// UserUpdate is the builder for updating User entities.
-type UserUpdate struct {
+// UsersUpdate is the builder for updating Users entities.
+type UsersUpdate struct {
 	config
 	hooks    []Hook
-	mutation *UserMutation
+	mutation *UsersMutation
 }
 
-// Where appends a list predicates to the UserUpdate builder.
-func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
+// Where appends a list predicates to the UsersUpdate builder.
+func (uu *UsersUpdate) Where(ps ...predicate.Users) *UsersUpdate {
 	uu.mutation.Where(ps...)
 	return uu
 }
 
 // SetEmail sets the "email" field.
-func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
+func (uu *UsersUpdate) SetEmail(s string) *UsersUpdate {
 	uu.mutation.SetEmail(s)
 	return uu
 }
 
 // SetUsername sets the "username" field.
-func (uu *UserUpdate) SetUsername(s string) *UserUpdate {
+func (uu *UsersUpdate) SetUsername(s string) *UsersUpdate {
 	uu.mutation.SetUsername(s)
 	return uu
 }
 
 // SetPassword sets the "password" field.
-func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
+func (uu *UsersUpdate) SetPassword(s string) *UsersUpdate {
 	uu.mutation.SetPassword(s)
 	return uu
 }
 
-// SetCreateAt sets the "createAt" field.
-func (uu *UserUpdate) SetCreateAt(t time.Time) *UserUpdate {
-	uu.mutation.SetCreateAt(t)
-	return uu
-}
-
-// SetNillableCreateAt sets the "createAt" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableCreateAt(t *time.Time) *UserUpdate {
-	if t != nil {
-		uu.SetCreateAt(*t)
-	}
-	return uu
-}
-
 // SetUpdateAt sets the "updateAt" field.
-func (uu *UserUpdate) SetUpdateAt(t time.Time) *UserUpdate {
+func (uu *UsersUpdate) SetUpdateAt(t time.Time) *UsersUpdate {
 	uu.mutation.SetUpdateAt(t)
 	return uu
 }
 
-// AddPostIDs adds the "posts" edge to the Post entity by IDs.
-func (uu *UserUpdate) AddPostIDs(ids ...int) *UserUpdate {
+// AddPostIDs adds the "posts" edge to the Posts entity by IDs.
+func (uu *UsersUpdate) AddPostIDs(ids ...int) *UsersUpdate {
 	uu.mutation.AddPostIDs(ids...)
 	return uu
 }
 
-// AddPosts adds the "posts" edges to the Post entity.
-func (uu *UserUpdate) AddPosts(p ...*Post) *UserUpdate {
+// AddPosts adds the "posts" edges to the Posts entity.
+func (uu *UsersUpdate) AddPosts(p ...*Posts) *UsersUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
@@ -82,25 +68,25 @@ func (uu *UserUpdate) AddPosts(p ...*Post) *UserUpdate {
 	return uu.AddPostIDs(ids...)
 }
 
-// Mutation returns the UserMutation object of the builder.
-func (uu *UserUpdate) Mutation() *UserMutation {
+// Mutation returns the UsersMutation object of the builder.
+func (uu *UsersUpdate) Mutation() *UsersMutation {
 	return uu.mutation
 }
 
-// ClearPosts clears all "posts" edges to the Post entity.
-func (uu *UserUpdate) ClearPosts() *UserUpdate {
+// ClearPosts clears all "posts" edges to the Posts entity.
+func (uu *UsersUpdate) ClearPosts() *UsersUpdate {
 	uu.mutation.ClearPosts()
 	return uu
 }
 
-// RemovePostIDs removes the "posts" edge to Post entities by IDs.
-func (uu *UserUpdate) RemovePostIDs(ids ...int) *UserUpdate {
+// RemovePostIDs removes the "posts" edge to Posts entities by IDs.
+func (uu *UsersUpdate) RemovePostIDs(ids ...int) *UsersUpdate {
 	uu.mutation.RemovePostIDs(ids...)
 	return uu
 }
 
-// RemovePosts removes "posts" edges to Post entities.
-func (uu *UserUpdate) RemovePosts(p ...*Post) *UserUpdate {
+// RemovePosts removes "posts" edges to Posts entities.
+func (uu *UsersUpdate) RemovePosts(p ...*Posts) *UsersUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
@@ -109,7 +95,7 @@ func (uu *UserUpdate) RemovePosts(p ...*Post) *UserUpdate {
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
+func (uu *UsersUpdate) Save(ctx context.Context) (int, error) {
 	var (
 		err      error
 		affected int
@@ -122,7 +108,7 @@ func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
 		affected, err = uu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*UserMutation)
+			mutation, ok := m.(*UsersMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
@@ -148,7 +134,7 @@ func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (uu *UserUpdate) SaveX(ctx context.Context) int {
+func (uu *UsersUpdate) SaveX(ctx context.Context) int {
 	affected, err := uu.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -157,49 +143,49 @@ func (uu *UserUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (uu *UserUpdate) Exec(ctx context.Context) error {
+func (uu *UsersUpdate) Exec(ctx context.Context) error {
 	_, err := uu.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (uu *UserUpdate) ExecX(ctx context.Context) {
+func (uu *UsersUpdate) ExecX(ctx context.Context) {
 	if err := uu.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (uu *UserUpdate) defaults() {
+func (uu *UsersUpdate) defaults() {
 	if _, ok := uu.mutation.UpdateAt(); !ok {
-		v := user.UpdateDefaultUpdateAt()
+		v := users.UpdateDefaultUpdateAt()
 		uu.mutation.SetUpdateAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (uu *UserUpdate) check() error {
+func (uu *UsersUpdate) check() error {
 	if v, ok := uu.mutation.Email(); ok {
-		if err := user.EmailValidator(v); err != nil {
-			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
+		if err := users.EmailValidator(v); err != nil {
+			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "Users.email": %w`, err)}
 		}
 	}
 	if v, ok := uu.mutation.Username(); ok {
-		if err := user.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
+		if err := users.UsernameValidator(v); err != nil {
+			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "Users.username": %w`, err)}
 		}
 	}
 	return nil
 }
 
-func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (uu *UsersUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
-			Table:   user.Table,
-			Columns: user.Columns,
+			Table:   users.Table,
+			Columns: users.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: user.FieldID,
+				Column: users.FieldID,
 			},
 		},
 	}
@@ -214,48 +200,41 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldEmail,
+			Column: users.FieldEmail,
 		})
 	}
 	if value, ok := uu.mutation.Username(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldUsername,
+			Column: users.FieldUsername,
 		})
 	}
 	if value, ok := uu.mutation.Password(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldPassword,
-		})
-	}
-	if value, ok := uu.mutation.CreateAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: user.FieldCreateAt,
+			Column: users.FieldPassword,
 		})
 	}
 	if value, ok := uu.mutation.UpdateAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: user.FieldUpdateAt,
+			Column: users.FieldUpdateAt,
 		})
 	}
 	if uu.mutation.PostsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.PostsTable,
-			Columns: []string{user.PostsColumn},
+			Table:   users.PostsTable,
+			Columns: []string{users.PostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: post.FieldID,
+					Column: posts.FieldID,
 				},
 			},
 		}
@@ -265,13 +244,13 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.PostsTable,
-			Columns: []string{user.PostsColumn},
+			Table:   users.PostsTable,
+			Columns: []string{users.PostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: post.FieldID,
+					Column: posts.FieldID,
 				},
 			},
 		}
@@ -284,13 +263,13 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.PostsTable,
-			Columns: []string{user.PostsColumn},
+			Table:   users.PostsTable,
+			Columns: []string{users.PostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: post.FieldID,
+					Column: posts.FieldID,
 				},
 			},
 		}
@@ -301,7 +280,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{user.Label}
+			err = &NotFoundError{users.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -310,60 +289,46 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	return n, nil
 }
 
-// UserUpdateOne is the builder for updating a single User entity.
-type UserUpdateOne struct {
+// UsersUpdateOne is the builder for updating a single Users entity.
+type UsersUpdateOne struct {
 	config
 	fields   []string
 	hooks    []Hook
-	mutation *UserMutation
+	mutation *UsersMutation
 }
 
 // SetEmail sets the "email" field.
-func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
+func (uuo *UsersUpdateOne) SetEmail(s string) *UsersUpdateOne {
 	uuo.mutation.SetEmail(s)
 	return uuo
 }
 
 // SetUsername sets the "username" field.
-func (uuo *UserUpdateOne) SetUsername(s string) *UserUpdateOne {
+func (uuo *UsersUpdateOne) SetUsername(s string) *UsersUpdateOne {
 	uuo.mutation.SetUsername(s)
 	return uuo
 }
 
 // SetPassword sets the "password" field.
-func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
+func (uuo *UsersUpdateOne) SetPassword(s string) *UsersUpdateOne {
 	uuo.mutation.SetPassword(s)
 	return uuo
 }
 
-// SetCreateAt sets the "createAt" field.
-func (uuo *UserUpdateOne) SetCreateAt(t time.Time) *UserUpdateOne {
-	uuo.mutation.SetCreateAt(t)
-	return uuo
-}
-
-// SetNillableCreateAt sets the "createAt" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableCreateAt(t *time.Time) *UserUpdateOne {
-	if t != nil {
-		uuo.SetCreateAt(*t)
-	}
-	return uuo
-}
-
 // SetUpdateAt sets the "updateAt" field.
-func (uuo *UserUpdateOne) SetUpdateAt(t time.Time) *UserUpdateOne {
+func (uuo *UsersUpdateOne) SetUpdateAt(t time.Time) *UsersUpdateOne {
 	uuo.mutation.SetUpdateAt(t)
 	return uuo
 }
 
-// AddPostIDs adds the "posts" edge to the Post entity by IDs.
-func (uuo *UserUpdateOne) AddPostIDs(ids ...int) *UserUpdateOne {
+// AddPostIDs adds the "posts" edge to the Posts entity by IDs.
+func (uuo *UsersUpdateOne) AddPostIDs(ids ...int) *UsersUpdateOne {
 	uuo.mutation.AddPostIDs(ids...)
 	return uuo
 }
 
-// AddPosts adds the "posts" edges to the Post entity.
-func (uuo *UserUpdateOne) AddPosts(p ...*Post) *UserUpdateOne {
+// AddPosts adds the "posts" edges to the Posts entity.
+func (uuo *UsersUpdateOne) AddPosts(p ...*Posts) *UsersUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
@@ -371,25 +336,25 @@ func (uuo *UserUpdateOne) AddPosts(p ...*Post) *UserUpdateOne {
 	return uuo.AddPostIDs(ids...)
 }
 
-// Mutation returns the UserMutation object of the builder.
-func (uuo *UserUpdateOne) Mutation() *UserMutation {
+// Mutation returns the UsersMutation object of the builder.
+func (uuo *UsersUpdateOne) Mutation() *UsersMutation {
 	return uuo.mutation
 }
 
-// ClearPosts clears all "posts" edges to the Post entity.
-func (uuo *UserUpdateOne) ClearPosts() *UserUpdateOne {
+// ClearPosts clears all "posts" edges to the Posts entity.
+func (uuo *UsersUpdateOne) ClearPosts() *UsersUpdateOne {
 	uuo.mutation.ClearPosts()
 	return uuo
 }
 
-// RemovePostIDs removes the "posts" edge to Post entities by IDs.
-func (uuo *UserUpdateOne) RemovePostIDs(ids ...int) *UserUpdateOne {
+// RemovePostIDs removes the "posts" edge to Posts entities by IDs.
+func (uuo *UsersUpdateOne) RemovePostIDs(ids ...int) *UsersUpdateOne {
 	uuo.mutation.RemovePostIDs(ids...)
 	return uuo
 }
 
-// RemovePosts removes "posts" edges to Post entities.
-func (uuo *UserUpdateOne) RemovePosts(p ...*Post) *UserUpdateOne {
+// RemovePosts removes "posts" edges to Posts entities.
+func (uuo *UsersUpdateOne) RemovePosts(p ...*Posts) *UsersUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
@@ -399,16 +364,16 @@ func (uuo *UserUpdateOne) RemovePosts(p ...*Post) *UserUpdateOne {
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (uuo *UserUpdateOne) Select(field string, fields ...string) *UserUpdateOne {
+func (uuo *UsersUpdateOne) Select(field string, fields ...string) *UsersUpdateOne {
 	uuo.fields = append([]string{field}, fields...)
 	return uuo
 }
 
-// Save executes the query and returns the updated User entity.
-func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
+// Save executes the query and returns the updated Users entity.
+func (uuo *UsersUpdateOne) Save(ctx context.Context) (*Users, error) {
 	var (
 		err  error
-		node *User
+		node *Users
 	)
 	uuo.defaults()
 	if len(uuo.hooks) == 0 {
@@ -418,7 +383,7 @@ func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
 		node, err = uuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*UserMutation)
+			mutation, ok := m.(*UsersMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
@@ -440,9 +405,9 @@ func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
 		if err != nil {
 			return nil, err
 		}
-		nv, ok := v.(*User)
+		nv, ok := v.(*Users)
 		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from UserMutation", v)
+			return nil, fmt.Errorf("unexpected node type %T returned from UsersMutation", v)
 		}
 		node = nv
 	}
@@ -450,7 +415,7 @@ func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (uuo *UserUpdateOne) SaveX(ctx context.Context) *User {
+func (uuo *UsersUpdateOne) SaveX(ctx context.Context) *Users {
 	node, err := uuo.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -459,65 +424,65 @@ func (uuo *UserUpdateOne) SaveX(ctx context.Context) *User {
 }
 
 // Exec executes the query on the entity.
-func (uuo *UserUpdateOne) Exec(ctx context.Context) error {
+func (uuo *UsersUpdateOne) Exec(ctx context.Context) error {
 	_, err := uuo.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (uuo *UserUpdateOne) ExecX(ctx context.Context) {
+func (uuo *UsersUpdateOne) ExecX(ctx context.Context) {
 	if err := uuo.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (uuo *UserUpdateOne) defaults() {
+func (uuo *UsersUpdateOne) defaults() {
 	if _, ok := uuo.mutation.UpdateAt(); !ok {
-		v := user.UpdateDefaultUpdateAt()
+		v := users.UpdateDefaultUpdateAt()
 		uuo.mutation.SetUpdateAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (uuo *UserUpdateOne) check() error {
+func (uuo *UsersUpdateOne) check() error {
 	if v, ok := uuo.mutation.Email(); ok {
-		if err := user.EmailValidator(v); err != nil {
-			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
+		if err := users.EmailValidator(v); err != nil {
+			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "Users.email": %w`, err)}
 		}
 	}
 	if v, ok := uuo.mutation.Username(); ok {
-		if err := user.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
+		if err := users.UsernameValidator(v); err != nil {
+			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "Users.username": %w`, err)}
 		}
 	}
 	return nil
 }
 
-func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
+func (uuo *UsersUpdateOne) sqlSave(ctx context.Context) (_node *Users, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
-			Table:   user.Table,
-			Columns: user.Columns,
+			Table:   users.Table,
+			Columns: users.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: user.FieldID,
+				Column: users.FieldID,
 			},
 		},
 	}
 	id, ok := uuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "User.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Users.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := uuo.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, user.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, users.FieldID)
 		for _, f := range fields {
-			if !user.ValidColumn(f) {
+			if !users.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != user.FieldID {
+			if f != users.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)
 			}
 		}
@@ -533,48 +498,41 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldEmail,
+			Column: users.FieldEmail,
 		})
 	}
 	if value, ok := uuo.mutation.Username(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldUsername,
+			Column: users.FieldUsername,
 		})
 	}
 	if value, ok := uuo.mutation.Password(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldPassword,
-		})
-	}
-	if value, ok := uuo.mutation.CreateAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: user.FieldCreateAt,
+			Column: users.FieldPassword,
 		})
 	}
 	if value, ok := uuo.mutation.UpdateAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: user.FieldUpdateAt,
+			Column: users.FieldUpdateAt,
 		})
 	}
 	if uuo.mutation.PostsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.PostsTable,
-			Columns: []string{user.PostsColumn},
+			Table:   users.PostsTable,
+			Columns: []string{users.PostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: post.FieldID,
+					Column: posts.FieldID,
 				},
 			},
 		}
@@ -584,13 +542,13 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.PostsTable,
-			Columns: []string{user.PostsColumn},
+			Table:   users.PostsTable,
+			Columns: []string{users.PostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: post.FieldID,
+					Column: posts.FieldID,
 				},
 			},
 		}
@@ -603,13 +561,13 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.PostsTable,
-			Columns: []string{user.PostsColumn},
+			Table:   users.PostsTable,
+			Columns: []string{users.PostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: post.FieldID,
+					Column: posts.FieldID,
 				},
 			},
 		}
@@ -618,12 +576,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_node = &User{config: uuo.config}
+	_node = &Users{config: uuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, uuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{user.Label}
+			err = &NotFoundError{users.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}

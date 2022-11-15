@@ -9,25 +9,25 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/kyh0703/stock-server/ent/post"
+	"github.com/kyh0703/stock-server/ent/posts"
 	"github.com/kyh0703/stock-server/ent/predicate"
 )
 
-// PostDelete is the builder for deleting a Post entity.
-type PostDelete struct {
+// PostsDelete is the builder for deleting a Posts entity.
+type PostsDelete struct {
 	config
 	hooks    []Hook
-	mutation *PostMutation
+	mutation *PostsMutation
 }
 
-// Where appends a list predicates to the PostDelete builder.
-func (pd *PostDelete) Where(ps ...predicate.Post) *PostDelete {
+// Where appends a list predicates to the PostsDelete builder.
+func (pd *PostsDelete) Where(ps ...predicate.Posts) *PostsDelete {
 	pd.mutation.Where(ps...)
 	return pd
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (pd *PostDelete) Exec(ctx context.Context) (int, error) {
+func (pd *PostsDelete) Exec(ctx context.Context) (int, error) {
 	var (
 		err      error
 		affected int
@@ -36,7 +36,7 @@ func (pd *PostDelete) Exec(ctx context.Context) (int, error) {
 		affected, err = pd.sqlExec(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*PostMutation)
+			mutation, ok := m.(*PostsMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
@@ -59,7 +59,7 @@ func (pd *PostDelete) Exec(ctx context.Context) (int, error) {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pd *PostDelete) ExecX(ctx context.Context) int {
+func (pd *PostsDelete) ExecX(ctx context.Context) int {
 	n, err := pd.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -67,13 +67,13 @@ func (pd *PostDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (pd *PostDelete) sqlExec(ctx context.Context) (int, error) {
+func (pd *PostsDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := &sqlgraph.DeleteSpec{
 		Node: &sqlgraph.NodeSpec{
-			Table: post.Table,
+			Table: posts.Table,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: post.FieldID,
+				Column: posts.FieldID,
 			},
 		},
 	}
@@ -91,25 +91,25 @@ func (pd *PostDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// PostDeleteOne is the builder for deleting a single Post entity.
-type PostDeleteOne struct {
-	pd *PostDelete
+// PostsDeleteOne is the builder for deleting a single Posts entity.
+type PostsDeleteOne struct {
+	pd *PostsDelete
 }
 
 // Exec executes the deletion query.
-func (pdo *PostDeleteOne) Exec(ctx context.Context) error {
+func (pdo *PostsDeleteOne) Exec(ctx context.Context) error {
 	n, err := pdo.pd.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{post.Label}
+		return &NotFoundError{posts.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pdo *PostDeleteOne) ExecX(ctx context.Context) {
+func (pdo *PostsDeleteOne) ExecX(ctx context.Context) {
 	pdo.pd.ExecX(ctx)
 }
