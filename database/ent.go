@@ -15,11 +15,16 @@ var Ent *ent.Client
 
 func ConnectDb(ctx context.Context) (*ent.Client, error) {
 	var err error
+
 	// create ent client
 	Ent, err = ent.Open(config.Env.DBType, config.Env.DBUrl)
 	if err != nil {
 		return nil, err
 	}
+
+	// set debug mode
+	Ent = Ent.Debug()
+
 	// auto migration tool
 	err = Ent.Schema.Create(
 		ctx,
@@ -29,5 +34,6 @@ func ConnectDb(ctx context.Context) (*ent.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return Ent, nil
 }

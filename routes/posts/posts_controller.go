@@ -26,10 +26,11 @@ func (ctrl *postsController) Path() string {
 }
 
 func (ctrl *postsController) Routes(router fiber.Router) {
+	router.Post("/write", middleware.TokenAuth(), ctrl.Write)
 	router.Get("/", ctrl.List)
 	router.Get("/:id", ctrl.GetPostById)
-	router.Post("/write", middleware.TokenAuth(), ctrl.Write)
-	router.Delete("/:id", middleware.TokenAuth(), ctrl.RemovePostById)
+	router.Patch("/", middleware.TokenAuth(), ctrl.UpdatePostById)
+	router.Delete("/", middleware.TokenAuth(), ctrl.RemovePostById)
 }
 
 // Write        godoc
@@ -85,6 +86,10 @@ func (ctrl *postsController) List(c *fiber.Ctx) error {
 		Username: username,
 	}
 
+	if err := validator.New().StructCtx(c.Context(), req); err != nil {
+		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
+	}
+
 	return ctrl.postsSvc.GetPosts(c, req)
 }
 
@@ -96,7 +101,7 @@ func (ctrl *postsController) List(c *fiber.Ctx) error {
 // @Success     200
 // @Router      /posts/:id [post]
 func (ctrl *postsController) GetPostById(c *fiber.Ctx) error {
-	postId, err := c.ParamsInt("id", 0)
+	postId, err := c.ParamsInt("id")
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
@@ -108,18 +113,42 @@ func (ctrl *postsController) GetPostById(c *fiber.Ctx) error {
 	return ctrl.postsSvc.GetPost(c, req)
 }
 
-// GetPostById  godoc
-// @Summary     remove post api
-// @Description remove post by postID
-// @Tags        post
-// @Produce     json
-// @Success     200
-// @Router      /posts/:id [delete]
-func (ctrl *postsController) RemovePostById(c *fiber.Ctx) error {
-	postId, err := c.ParamsInt("id", 0)
-	if err != nil {
+// UpdatePostById godoc
+// @Summary       update post api
+// @Description   update post by id
+// @Tags          post
+// @Produce       json
+// @Success       200
+// @Router        /posts [patch]
+func (ctrl *postsController) UpdatePostById(c *fiber.Ctx) error {
+	req := new(dto.PostsUpdateRequest)
+	if err := c.BodyParser(req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
-	return ctrl.postsSvc.RemovePost(c, postId)
+	if err := validator.New().StructCtx(c.Context(), req); err != nil {
+		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
+	}
+
+	return ctrl.postsSvc.UpdatePost(c, req)
+}
+
+// RemovePostById godoc
+// @Summary       remove post api
+// @Description   remove post by id
+// @Tags          post
+// @Produce       json
+// @Success       200
+// @Router        /posts [delete]
+func (ctrl *postsController) RemovePostById(c *fiber.Ctx) error {
+	req := new(dto.PostsDeleteRequest)
+	if err := c.BodyParser(req); err != nil {
+		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
+	}
+
+	if err := validator.New().StructCtx(c.Context(), req); err != nil {
+		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
+	}
+
+	return ctrl.postsSvc.RemovePost(c, req)
 }

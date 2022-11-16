@@ -96,8 +96,24 @@ func (svc *postsService) GetPosts(c *fiber.Ctx, req *dto.PostsListRequest) error
 	return c.Status(fiber.StatusOK).JSON(res)
 }
 
-func (svc *postsService) RemovePost(c *fiber.Ctx, id int) error {
-	if err := svc.postsRepo.DeleteById(c.Context(), id); err != nil {
+func (svc *postsService) UpdatePost(c *fiber.Ctx, req *dto.PostsUpdateRequest) error {
+	post, err := svc.postsRepo.UpdateById(c.Context(), req.ID, req.Title, req.Body, req.Tags)
+	if err != nil {
+		return c.App().ErrorHandler(c, types.ErrServerInternal)
+	}
+
+	var res dto.PostsUpdateResponse
+	res.ID = post.ID
+	res.Title = post.Title
+	res.Body = post.Body
+	res.Tags = post.Tags
+	res.PublishAt = post.PublishAt.String()
+
+	return c.Status(fiber.StatusOK).JSON(res)
+}
+
+func (svc *postsService) RemovePost(c *fiber.Ctx, req *dto.PostsDeleteRequest) error {
+	if err := svc.postsRepo.DeleteById(c.Context(), req.ID); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 

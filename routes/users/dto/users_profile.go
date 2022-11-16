@@ -1,7 +1,7 @@
 package dto
 
 type UsersProfileRequest struct {
-	ID int `json:"id"`
+	ID int `json:"id" validate:"require"`
 }
 
 type UsersProfileResponse struct {
