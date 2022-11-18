@@ -97,6 +97,10 @@ func (svc *postsService) GetPosts(c *fiber.Ctx, req *dto.PostsListRequest) error
 }
 
 func (svc *postsService) UpdatePost(c *fiber.Ctx, req *dto.PostsUpdateRequest) error {
+	if err := svc.CheckOwnPost(c, req.ID); err != nil {
+		return err
+	}
+
 	post, err := svc.postsRepo.UpdateById(c.Context(), req.ID, req.Title, req.Body, req.Tags)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
@@ -113,9 +117,31 @@ func (svc *postsService) UpdatePost(c *fiber.Ctx, req *dto.PostsUpdateRequest) e
 }
 
 func (svc *postsService) RemovePost(c *fiber.Ctx, req *dto.PostsDeleteRequest) error {
+	if err := svc.CheckOwnPost(c, req.ID); err != nil {
+		return err
+	}
+
 	if err := svc.postsRepo.DeleteById(c.Context(), req.ID); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
 	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (svc *postsService) CheckOwnPost(c *fiber.Ctx, postId int) error {
+	userId, ok := c.UserContext().Value("user_id").(int)
+	if !ok {
+		return c.App().ErrorHandler(c, types.ErrUnauthorized)
+	}
+
+	post, err := svc.postsRepo.FetchOneWithUser(c.Context(), postId)
+	if err != nil {
+		return c.App().ErrorHandler(c, types.ErrServerInternal)
+	}
+
+	if userId != post.Edges.User.ID {
+		return c.App().ErrorHandler(c, types.ErrUserUnauthorized)
+	}
+
+	return nil
 }
