@@ -22,7 +22,11 @@ type Environment struct {
 }
 
 func init() {
-	godotenv.Load("./env/.development.env")
+	if err := godotenv.Load("config/env/.development.env"); err != nil {
+		log.Println("dose not exist .env file")
+	} else {
+		log.Println("load .env file complete")
+	}
 	env.Parse(&Env)
 	PrintEnvironment()
 }
