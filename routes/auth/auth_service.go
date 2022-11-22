@@ -214,6 +214,7 @@ func (svc *AuthService) saveToken(userID int, token *TokenMetaData) error {
 		refreshTokenExpire = time.Unix(token.RefreshTokenExpires, 0)
 		now                = time.Now()
 	)
+
 	if err := svc.authRepo.InsertToken(
 		userID,
 		token.AccessUUID,
@@ -222,6 +223,7 @@ func (svc *AuthService) saveToken(userID int, token *TokenMetaData) error {
 	); err != nil {
 		return err
 	}
+
 	if err := svc.authRepo.InsertToken(
 		userID,
 		token.RefreshUUID,
@@ -230,6 +232,7 @@ func (svc *AuthService) saveToken(userID int, token *TokenMetaData) error {
 	); err != nil {
 		return err
 	}
+
 	return nil
 }
 
