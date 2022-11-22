@@ -50,7 +50,7 @@ func (ctrl *postsController) Write(c *fiber.Ctx) error {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
-	req.UserID = c.UserContext().Value("user_id").(int)
+	req.UserID = c.Context().UserValue(types.ContextKeyUserID).(int)
 	return ctrl.postsSvc.SavePost(c, req)
 }
 

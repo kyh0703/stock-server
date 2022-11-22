@@ -80,7 +80,7 @@ func (ctrl *usersController) Login(c *fiber.Ctx) error {
 // @Router      /users/profile [get]
 func (ctrl *usersController) Profile(c *fiber.Ctx) error {
 	req := new(dto.UsersProfileRequest)
-	req.ID = c.UserContext().Value("user_id").(int)
+	req.ID = c.Context().UserValue(types.ContextKeyUserID).(int)
 
 	if err := validator.New().StructCtx(c.Context(), req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
@@ -97,7 +97,7 @@ func (ctrl *usersController) Profile(c *fiber.Ctx) error {
 // @Produce     json
 // @Router      /users/logout [post]
 func (ctrl *usersController) Logout(c *fiber.Ctx) error {
-	token := c.UserContext().Value("access_token").(string)
+	token := c.Context().UserValue(types.ContextKeyAccessToken).(string)
 	return ctrl.usersSvc.Logout(c, token)
 }
 

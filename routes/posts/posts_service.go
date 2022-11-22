@@ -129,7 +129,7 @@ func (svc *postsService) RemovePost(c *fiber.Ctx, req *dto.PostsDeleteRequest) e
 }
 
 func (svc *postsService) CheckOwnPost(c *fiber.Ctx, postId int) error {
-	userId, ok := c.UserContext().Value("user_id").(int)
+	userID, ok := c.Context().UserValue(types.ContextKeyUserID).(int)
 	if !ok {
 		return c.App().ErrorHandler(c, types.ErrUnauthorized)
 	}
@@ -139,7 +139,7 @@ func (svc *postsService) CheckOwnPost(c *fiber.Ctx, postId int) error {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 
-	if userId != post.Edges.User.ID {
+	if userID != post.Edges.User.ID {
 		return c.App().ErrorHandler(c, types.ErrUserUnauthorized)
 	}
 

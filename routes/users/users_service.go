@@ -75,6 +75,7 @@ func (svc *UsersService) Logout(c *fiber.Ctx, token string) error {
 	if err := svc.authSvc.Logout(token); err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
+
 	return c.SendStatus(fiber.StatusNoContent)
 }
 
@@ -89,6 +90,7 @@ func (svc *UsersService) GetUserDetail(c *fiber.Ctx, req *dto.UsersProfileReques
 		Email:    user.Email,
 		Username: user.Username,
 	}
+
 	return c.JSON(res)
 }
 
@@ -108,6 +110,7 @@ func (svc *UsersService) RefreshToken(c *fiber.Ctx, req *dto.UsersRefreshRequest
 	res := &dto.UsersRefreshResponse{
 		AccessToken: token.AccessToken,
 	}
+
 	return c.JSON(res)
 }
 
@@ -116,6 +119,7 @@ func (svc *UsersService) HashPassword(password string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to generate hash: %w", err)
 	}
+
 	return string(hash), nil
 }
 
@@ -126,5 +130,6 @@ func (svc *UsersService) CompareHashPassword(hash, password string) (bool, error
 		}
 		return false, err
 	}
+
 	return true, nil
 }

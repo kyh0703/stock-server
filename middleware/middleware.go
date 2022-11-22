@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -58,9 +57,8 @@ func TokenAuth() fiber.Handler {
 			return c.App().ErrorHandler(c, types.ErrUnauthorized)
 		}
 
-		// Set token to context
-		c.SetUserContext(context.WithValue(c.UserContext(), "access_token", tokenString))
-		c.SetUserContext(context.WithValue(c.UserContext(), "user_id", userID))
+		c.Context().SetUserValue("userID", userID)
+		c.Context().SetUserValue("accessToken", tokenString)
 		return c.Next()
 	}
 }

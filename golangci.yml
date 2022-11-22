@@ -1,0 +1,199 @@
+# Options for analysis running.
+run:
+  concurrency: 1
+  timeout: 5m
+  issues-exit-code: 0
+  tests: false
+  skip-dirs:
+#    - src/external_libs
+  skip-dirs-use-default: false
+  skip-files:
+    - ".*\\.my\\.go$"
+    - lib/bad.go
+  modules-download-mode: readonly
+  allow-parallel-runners: false
+  go: '1.18'
+# output configuration options
+output:
+  # Format: colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  uniq-by-line: true
+  sort-results: true
+# All available settings of specific linters.
+linters-settings:
+  gofmt:
+    simplify: false
+  revive:
+    severity: warning
+    rules:
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#atomic>
+      - name: atomic
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#blank-imports>
+      - name: blank-imports
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#bool-literal-in-expr>
+      - name: bool-literal-in-expr
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#call-to-gc>
+      - name: call-to-gc
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#constant-logical-expr>
+      - name: constant-logical-expr
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#context-as-argument>
+      - name: context-as-argument
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#context-keys-type>
+      - name: context-keys-type
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#defer>
+      - name: defer
+        disabled: false
+        arguments:
+          - ["call-chain", "loop", "method-call", "recover", "return"]
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#dot-imports>
+      - name: dot-imports
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#duplicated-imports>
+      - name: duplicated-imports
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#early-return>
+      - name: early-return
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#empty-block>
+      - name: empty-block
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#error-naming>
+      - name: error-naming
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#error-return>
+      - name: error-return
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#error-strings>
+      - name: error-strings
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#errorf>
+      - name: errorf
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#exported>
+      - name: exported
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#get-return>
+      - name: get-return
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#identical-branches>
+      - name: identical-branches
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#increment-decrement>
+      - name: increment-decrement
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#indent-error-flow>
+      - name: indent-error-flow
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#package-comments>
+      - name: package-comments
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#range>
+      - name: range
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#range-val-in-closure>
+      - name: range-val-in-closure
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#range-val-address>
+      - name: range-val-address
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#receiver-naming>
+      - name: receiver-naming
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#redefines-builtin-id>
+      - name: redefines-builtin-id
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#string-of-int>
+      - name: string-of-int
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#time-naming>
+      - name: time-naming
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#var-declaration>
+      - name: var-declaration
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#var-naming>
+      - name: var-naming
+        disabled: true
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#unexported-naming>
+      - name: unexported-naming
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#unexported-return>
+      - name: unexported-return
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#unnecessary-stmt>
+      - name: unnecessary-stmt
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#unreachable-code>
+      - name: unreachable-code
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#unused-parameter>
+      - name: unused-parameter
+        disabled: false
+      # <https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#useless-break>
+      - name: useless-break
+        disabled: false
+  staticcheck:
+    checks:
+      - all
+      - "-SA9004" # <https://staticcheck.io/docs/checks#SA9004>
+  # See the dedicated "linters-settings" documentation section.
+  gocritic:
+    disabled-checks:
+      - exitAfterDefer # panic is required when examines config
+    enabled-tags:
+#      - diagnostic
+#      - style
+#      - performance
+#      - experimental
+#      - opinionated
+linters:
+  # See the dedicated "linters" documentation section.
+  disable-all: true
+  enable:
+    - errcheck      # bugs  : 검사되지 않은 오류를 확인
+    - govet         # bugs  : 코드를 검사하고 인수가 형식 문자열과 일치하지 않는 Printf 호출과 같은 의심스러운 구문
+    - gosec         # security : 보안코드 검사
+    - bidichk       # bugs  : 위험한 유니코드 문자 시퀀스 확인
+    - bodyclose     # bugs  : HTTP 응답 본문이 성공적으로 닫혔는지 확인
+    - durationcheck # bugs  : 두 time.Duration값이 잘못된 방식으로 곱해지는 경우를 감지
+    - exportloopref # bugs : Loop 변수를 Loop 밖에서 참조 감지 ( i := i 추가 )
+    - noctx         # bugs : noctx는 컨텍스트없이 http 요청을 보내는 것을 찾습니다
+    - reassign      # bugs : 패키지 변수가 재할당되지 않았는지 확인
+    - rowserrcheck  # bugs : sql.Rows.Err 체크를 하지는 검사
+
+    - gofmt         # style : gosimple을 포함한 Code 형식 검사
+    - revive        # style : 이름규칙 등
+#    - gosimple      # style : 코드 단순화 검사
+    - ineffassign   # refact : 기존 변수에 대한 할당이 사용되지 않을 때 감지
+    - unused        # refact : 사용되지 않는 상수, 변수, 함수 및 유형을 확인
+    - errchkjson   # bugs  : json 인코딩 함수에 전달된 유형을 확인. 오류검사 생략 가능 체크
+    - errname      # style : 센티넬 오류가 접두사로 Err붙고 오류 유형이 접미사로 붙는지 확인합니다
+    - errorlint    # bugs  : Go 1.13에 도입된 오류 래핑 체계에 문제를 일으킬 코드를 찾는 데 사용
+    - goconst      # style : 상수로 대체 될 수있는 반복 된 문자열을 찾습니다.
+    - gocritic     # style : 형식, 성능, 오류감지 복합
+    - misspell
+    - predeclared   # style : Go의 미리 선언된 식별자( new, make, append uint등) 중 하나를 재정의하는 코드를 찾습니다.
+    - unconvert     # style : 불필요한 형변환 검사
+    - wrapcheck     # error : 외부 패키지에서 반환된 오류가 래핑되는지 확인합니다.
+    - wastedassign  # style : 낭비 된 할당 문을 찾습니다.
+
+#    - whitespace   # style : 선행 및 후행 공백 감지를 위한 도구
+#    - contextcheck # bugs  : 상속되지 않은 컨텍스트를 사용하는지 여부 확인
+#    - dupl         # style : 중복코드 확인
+#    - godot        # style : 주석이 마침표로 끝나는지 확인
+#    - godox        # style : FIXME, TODO 및 기타 주석 키워드의 탐지
+#    - goimports    # gofmt와 동일한 스타일로 코드의 형식을 지정
+issues:
+
+severity:
+  default-severity: warning
+  case-sensitive: true
