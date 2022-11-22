@@ -42,7 +42,7 @@ func (ctrl *postsController) Routes(router fiber.Router) {
 // @Router      /posts/write [post]
 func (ctrl *postsController) Write(c *fiber.Ctx) error {
 	req := new(dto.PostsCreateRequest)
-	if err := c.BodyParser(req); err != nil {
+	if;; err := c.BodyParser(req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
