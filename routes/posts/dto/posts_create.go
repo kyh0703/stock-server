@@ -4,7 +4,7 @@ type PostsCreateRequest struct {
 	Title  string   `json:"title" validate:"required"`
 	Body   string   `json:"body" validate:"required"`
 	Tags   []string `json:"tags" validate:"required"`
-	UserID int      `json:"userId" validate:"required"`
+	UserID int      `json:"userID" validate:"required"`
 }
 
 type PostsCreateResponse struct {
@@ -13,5 +13,5 @@ type PostsCreateResponse struct {
 	Body      string   `json:"body"`
 	Tags      []string `json:"tags"`
 	PublishAt string   `json:"publishAt"`
-	UserID    int      `json:"userId"`
+	UserID    int      `json:"userID"`
 }

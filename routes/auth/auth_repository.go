@@ -12,10 +12,10 @@ func (repo *AuthRepository) FetchUserIdByUUID(uuid string) (int, error) {
 	return database.Redis.Get(uuid).Int()
 }
 
-func (repo *AuthRepository) InsertToken(userId int, uuid string, expire, now time.Time) error {
+func (repo *AuthRepository) InsertToken(userID int, uuid string, expire, now time.Time) error {
 	return database.Redis.Set(
 		uuid,
-		userId,
+		userID,
 		expire.Sub(now)).
 		Err()
 }

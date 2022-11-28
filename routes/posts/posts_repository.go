@@ -13,13 +13,13 @@ import (
 
 type PostsRepository struct{}
 
-func (repo *PostsRepository) Insert(ctx context.Context, title, body string, tags []string, userId int) (*ent.Posts, error) {
+func (repo *PostsRepository) Insert(ctx context.Context, title, body string, tags []string, userID int) (*ent.Posts, error) {
 	return database.Ent.Posts.
 		Create().
 		SetTitle(title).
 		SetBody(body).
 		SetTags(tags).
-		SetUserID(userId).
+		SetUserID(userID).
 		Save(ctx)
 }
 
