@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/kyh0703/stock-server/database"
@@ -8,18 +9,18 @@ import (
 
 type AuthRepository struct{}
 
-func (repo *AuthRepository) FetchUserIdByUUID(uuid string) (int, error) {
-	return database.Redis.Get(uuid).Int()
+func (repo *AuthRepository) Fetch(userID int) (int64, error) {
+	return database.Redis.Get(strconv.Itoa(userID)).Int64()
 }
 
-func (repo *AuthRepository) InsertToken(userID int, uuid string, expire, now time.Time) error {
+func (repo *AuthRepository) InsertToken(userID int, expire time.Time) error {
 	return database.Redis.Set(
-		uuid,
+		strconv.Itoa(userID),
 		userID,
-		expire.Sub(now)).
+		expire.Sub(time.Now())).
 		Err()
 }
 
-func (repo *AuthRepository) Delete(id string) (int64, error) {
-	return database.Redis.Del(id).Result()
+func (repo *AuthRepository) Delete(userID string) (int64, error) {
+	return database.Redis.Del(userID).Result()
 }

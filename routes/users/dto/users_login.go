@@ -6,9 +6,7 @@ type UsersLoginRequest struct {
 }
 
 type UsersLoginResponse struct {
-	ID           int    `json:"id"`
-	Email        string `json:"email"`
-	Username     string `json:"username"`
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
+	ID       int    `json:"id"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
 }

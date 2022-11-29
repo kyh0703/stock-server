@@ -55,17 +55,33 @@ func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UsersLoginRequest) error {
 		return c.App().ErrorHandler(c, types.ErrPasswordInvalid)
 	}
 
-	token, err := svc.authSvc.Login(user.ID)
+	accessToken, err := svc.authSvc.Login(user.ID)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 
+	// NOTE [Access Token 처리]
+	// native web일경우에는 쿠키를 사용할 수 없으니
+	// Header나 Body에 담아 전달하나 web 개발이기에 cookie에 넣어둠
+	// 미들웨어 처리
+	// 1. Access Token, Refresh Token 두개 다 발급
+	//   - AccessToken Cookie에 저장
+	//   - RefreshToken Redis에 저장
+	// 2. AccessToken 만료, Refresh Token 만료 >> 회원가입
+	// 3. AccessToken 만료, Refresh Token 유효 >> AccessToken 재발급
+	// 4. AccessToken 유효, Refresh Token 만료 >> RefreshToken 재발급
+	// 5. AccessToken 유효, Refresh Token 유효 >> next()
+	cookie := new(fiber.Cookie)
+	cookie.Name = "token"
+	cookie.Value = accessToken
+	cookie.HTTPOnly = true
+	cookie.Secure = true
+	c.Cookie(cookie)
+
 	res := &dto.UsersLoginResponse{
-		ID:           user.ID,
-		Email:        user.Email,
-		Username:     user.Username,
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
+		ID:       user.ID,
+		Email:    user.Email,
+		Username: user.Username,
 	}
 
 	return c.JSON(res)
