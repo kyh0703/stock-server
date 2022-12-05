@@ -69,38 +69,51 @@ func (svc *AuthService) Login(userID int) (*dto.AccessTokenDto, error) {
 		return nil, err
 	}
 
-	res := &dto.AccessTokenDto{
+	return &dto.AccessTokenDto{
 		Token:  accessToken,
 		Expire: expireTime,
-	}
-
-	return res, nil
+	}, nil
 }
 
-func (svc *AuthService) Refresh(refreshToken string) (string, error) {
+func (svc *AuthService) Refresh(refreshToken string) (*dto.AccessTokenDto, error) {
 	claims, err := svc.RefreshTokenData(refreshToken)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	userID, err := strconv.ParseInt(
 		fmt.Sprintf("%.0f", claims[TokenKeyUserID]),
 		10, 64)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	userID, err = svc.authRepo.Fetch(int(userID))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	accessToken, err := svc.generateAccessJwt(int(userID))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return accessToken, nil
+	claims, err = svc.RefreshTokenData(refreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	expire, err := strconv.ParseInt(
+		fmt.Sprintf("%.0f", claims[TokenKeyExpire]),
+		10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.AccessTokenDto{
+		Token:  accessToken,
+		Expire: time.Unix(expire, 0),
+	}, nil
 }
 
 func (svc *AuthService) AccessTokenData(accessToken string) (jwt.MapClaims, error) {

@@ -55,7 +55,7 @@ func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UsersLoginRequest) error {
 		return c.App().ErrorHandler(c, types.ErrPasswordInvalid)
 	}
 
-	accessToken, err := svc.authSvc.Login(user.ID)
+	tokenData, err := svc.authSvc.Login(user.ID)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
@@ -73,7 +73,7 @@ func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UsersLoginRequest) error {
 	// 5. AccessToken 유효, Refresh Token 유효 >> next()
 	cookie := new(fiber.Cookie)
 	cookie.Name = "token"
-	cookie.Value = accessToken
+	cookie.Value = tokenData.Token
 	cookie.HTTPOnly = true
 	cookie.Secure = true
 	c.Cookie(cookie)
@@ -88,10 +88,6 @@ func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UsersLoginRequest) error {
 }
 
 func (svc *UsersService) Logout(c *fiber.Ctx, token string) error {
-	if err := svc.authSvc.Logout(token); err != nil {
-		return c.App().ErrorHandler(c, types.ErrServerInternal)
-	}
-
 	return c.SendStatus(fiber.StatusNoContent)
 }
 
@@ -111,23 +107,19 @@ func (svc *UsersService) GetUserDetail(c *fiber.Ctx, req *dto.UsersProfileReques
 }
 
 func (svc *UsersService) RefreshToken(c *fiber.Ctx, req *dto.UsersRefreshRequest) error {
-	token, err := svc.authSvc.Refresh(req.RefreshToken)
+	tokenData, err := svc.authSvc.Refresh(req.RefreshToken)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
 
 	cookie := new(fiber.Cookie)
 	cookie.Name = "token"
-	cookie.Value = token.RefreshToken
+	cookie.Value = tokenData.Token
 	cookie.HTTPOnly = true
 	cookie.Secure = true
 	c.Cookie(cookie)
 
-	res := &dto.UsersRefreshResponse{
-		AccessToken: token.AccessToken,
-	}
-
-	return c.JSON(res)
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func (svc *UsersService) HashPassword(password string) (string, error) {
