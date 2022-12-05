@@ -10,7 +10,7 @@ import (
 
 type UsersRepository struct{}
 
-func (repo *UsersRepository) Insert(ctx context.Context, username, email, password string) (*ent.Users, error) {
+func (repo *UsersRepository) Save(ctx context.Context, username, email, password string) (*ent.Users, error) {
 	return database.Ent.Users.
 		Create().
 		SetUsername(username).

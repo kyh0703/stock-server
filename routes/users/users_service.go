@@ -32,7 +32,7 @@ func (svc *UsersService) Register(c *fiber.Ctx, req *dto.UsersRegisterRequest) e
 		return c.App().ErrorHandler(c, types.ErrUserExist)
 	}
 
-	if _, err = svc.usersRepo.Insert(
+	if _, err = svc.usersRepo.Save(
 		c.Context(),
 		req.Username,
 		req.Email,

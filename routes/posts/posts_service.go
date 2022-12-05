@@ -14,7 +14,7 @@ type postsService struct {
 }
 
 func (svc *postsService) SavePost(c *fiber.Ctx, req *dto.PostsCreateRequest) error {
-	post, err := svc.postsRepo.Insert(
+	post, err := svc.postsRepo.Save(
 		c.Context(),
 		req.Title,
 		req.Body,

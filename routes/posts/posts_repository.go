@@ -13,7 +13,7 @@ import (
 
 type PostsRepository struct{}
 
-func (repo *PostsRepository) Insert(ctx context.Context, title, body string, tags []string, userID int) (*ent.Posts, error) {
+func (repo *PostsRepository) Save(ctx context.Context, title, body string, tags []string, userID int) (*ent.Posts, error) {
 	return database.Ent.Posts.
 		Create().
 		SetTitle(title).
