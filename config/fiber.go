@@ -26,18 +26,20 @@ func Fiber(existView bool) fiber.Config {
 			code    = fiber.ErrInternalServerError.Code
 			message = fiber.ErrInternalServerError.Message
 		)
+
 		// Retrieve the custom status code if it's an fiber.*Error
 		if e, ok := err.(*fiber.Error); ok {
 			code = e.Code
 			message = e.Message
 		}
+
 		// set json data
 		c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
-		data := fiber.Map{
-			"status":  code,
-			"message": message,
-		}
-		return c.Status(code).JSON(data)
+
+		return c.Status(code).JSON(fiber.Map{
+			"statusCode": code,
+			"message":    message,
+		})
 	}
 
 	return cfg
