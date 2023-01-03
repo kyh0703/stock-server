@@ -1,13 +1,17 @@
-package auth
+package users
 
 import (
 	"strconv"
 	"time"
 
-	"github.com/kyh0703/stock-server/database"
+	"github.com/kyh0703/stock-server/internal/database"
 )
 
 type AuthRepository struct{}
+
+func NewAuthRepository() *AuthRepository {
+	return &AuthRepository{}
+}
 
 func (repo *AuthRepository) Fetch(userID int) (int64, error) {
 	return database.Redis.Get(strconv.Itoa(userID)).Int64()

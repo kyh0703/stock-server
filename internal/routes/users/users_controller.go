@@ -3,27 +3,24 @@ package users
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/kyh0703/stock-server/middleware"
-	"github.com/kyh0703/stock-server/routes/users/dto"
-	"github.com/kyh0703/stock-server/types"
+	"github.com/kyh0703/stock-server/internal/middleware"
+	"github.com/kyh0703/stock-server/internal/routes/users/dto"
+	"github.com/kyh0703/stock-server/internal/types"
 )
 
 type usersController struct {
-	path     string
 	usersSvc UsersService
 }
 
 func NewUsersController() *usersController {
-	return &usersController{
-		path: "users",
-	}
+	return &usersController{}
 }
 
 func (ctrl *usersController) Path() string {
-	return ctrl.path
+	return "users"
 }
 
-func (ctrl *usersController) Routes(router fiber.Router) {
+func (ctrl *usersController) Index(router fiber.Router) {
 	router.Post("/register", ctrl.Register)
 	router.Post("/login", ctrl.Login)
 	router.Get("/profile", middleware.TokenAuth(), ctrl.Profile)

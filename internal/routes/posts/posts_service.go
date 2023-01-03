@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/kyh0703/stock-server/routes/posts/dto"
-	"github.com/kyh0703/stock-server/types"
+	"github.com/kyh0703/stock-server/internal/routes/posts/dto"
+	"github.com/kyh0703/stock-server/internal/types"
 )
 
 type postsService struct {

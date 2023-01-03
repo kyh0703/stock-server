@@ -1,4 +1,4 @@
-package config
+package configs
 
 import "github.com/gofiber/fiber/v2/middleware/basicauth"
 

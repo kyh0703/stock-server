@@ -1,4 +1,4 @@
-package config
+package configs
 
 import (
 	"log"
@@ -16,9 +16,13 @@ type Environment struct {
 	AccessSecretKey  string        `env:"ACCESS_SECRET_KEY" envDefault:"secret"`
 	RefreshSecretKey string        `env:"REFRESH_SECRET_KEY" envDefault:"refresh"`
 	ReadTimeout      time.Duration `env:"READ_TIME_OUT" envDefault:"3s"`
+
 	// Database
 	DBType string `env:"DB_NAME" envDefault:"mysql"`
 	DBUrl  string `env:"DB_URL" envDefault:"root:1234@tcp(localhost:3306)/stock?parseTime=true"`
+
+	// Cache
+	CacheUrl string `env:"CACHE_URL" envDefault:""`
 }
 
 func init() {
@@ -41,5 +45,8 @@ func PrintEnvironment() {
 	log.Println("[DATABASE]")
 	log.Println("DB_NAME             = ", Env.DBType)
 	log.Println("DB_URL              = ", Env.DBUrl)
+	log.Println("────────────────────────────────────")
+	log.Println("[CACHE]")
+	log.Println("CACHE_URL           = ", Env.CacheUrl)
 	log.Println("────────────────────────────────────")
 }

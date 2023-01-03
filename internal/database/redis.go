@@ -6,16 +6,16 @@ import (
 
 var Redis *redis.Client
 
-func ConnectRedis() (*redis.Client, error) {
-	var err error
+func ConnectRedis(host string) (*redis.Client, error) {
 	// create new client
 	Redis = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: host,
 	})
+
 	// ping test
-	_, err = Redis.Ping().Result()
-	if err != nil {
+	if _, err := Redis.Ping().Result(); err != nil {
 		return nil, err
 	}
-	return Redis, err
+
+	return Redis, nil
 }

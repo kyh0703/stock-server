@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 
-	"github.com/kyh0703/stock-server/config"
 	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/migrate"
 
@@ -13,11 +12,11 @@ import (
 
 var Ent *ent.Client
 
-func ConnectDb(ctx context.Context) (*ent.Client, error) {
+func ConnectDatabase(ctx context.Context, databaseType, databaseHost string) (*ent.Client, error) {
 	var err error
 
 	// create ent client
-	Ent, err = ent.Open(config.Env.DBType, config.Env.DBUrl)
+	Ent, err = ent.Open(databaseType, databaseHost)
 	if err != nil {
 		return nil, err
 	}

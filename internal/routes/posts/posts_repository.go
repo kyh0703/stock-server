@@ -5,10 +5,10 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
-	"github.com/kyh0703/stock-server/database"
 	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/posts"
 	"github.com/kyh0703/stock-server/ent/users"
+	"github.com/kyh0703/stock-server/internal/database"
 )
 
 type PostsRepository struct{}

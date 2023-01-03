@@ -3,9 +3,9 @@ package users
 import (
 	"context"
 
-	"github.com/kyh0703/stock-server/database"
 	"github.com/kyh0703/stock-server/ent"
 	"github.com/kyh0703/stock-server/ent/users"
+	"github.com/kyh0703/stock-server/internal/database"
 )
 
 type UsersRepository struct{}

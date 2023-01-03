@@ -1,4 +1,4 @@
-package auth
+package users
 
 import (
 	"errors"
@@ -7,8 +7,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/kyh0703/stock-server/config"
-	"github.com/kyh0703/stock-server/routes/auth/dto"
+	"github.com/kyh0703/stock-server/configs"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -117,7 +116,7 @@ func (svc *AuthService) Refresh(refreshToken string) (*dto.AccessTokenDto, error
 }
 
 func (svc *AuthService) AccessTokenData(accessToken string) (jwt.MapClaims, error) {
-	jwtToken, err := svc.getToken(accessToken, config.Env.AccessSecretKey)
+	jwtToken, err := svc.getToken(accessToken, configs.Env.AccessSecretKey)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +130,7 @@ func (svc *AuthService) AccessTokenData(accessToken string) (jwt.MapClaims, erro
 }
 
 func (svc *AuthService) RefreshTokenData(refreshToken string) (jwt.MapClaims, error) {
-	token, err := svc.getToken(refreshToken, config.Env.RefreshSecretKey)
+	token, err := svc.getToken(refreshToken, configs.Env.RefreshSecretKey)
 	if err != nil {
 		return nil, err
 	}
@@ -149,14 +148,14 @@ func (svc *AuthService) generateAccessJwt(userID int) (string, error) {
 		TokenKeyAuthorized: true,
 		TokenKeyUserID:     userID,
 		TokenKeyExpire:     time.Now().Add(time.Minute * 60).Unix(),
-	}).SignedString([]byte(config.Env.AccessSecretKey))
+	}).SignedString([]byte(configs.Env.AccessSecretKey))
 }
 
 func (svc *AuthService) generateRefreshJwt(userID int) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		TokenKeyUserID: userID,
 		TokenKeyExpire: time.Now().Add(time.Hour * 24 * 7 * 2).Unix(),
-	}).SignedString([]byte(config.Env.RefreshSecretKey))
+	}).SignedString([]byte(configs.Env.RefreshSecretKey))
 }
 
 func (svc *AuthService) generateToken(userID int) (accessToken, refreshToken string, err error) {

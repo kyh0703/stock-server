@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/kyh0703/stock-server/routes/auth"
-	"github.com/kyh0703/stock-server/types"
+	"github.com/kyh0703/stock-server/internal/routes/auth"
+	"github.com/kyh0703/stock-server/internal/types"
 )
 
 func SetUserContext() fiber.Handler {

@@ -5,27 +5,24 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/kyh0703/stock-server/middleware"
-	"github.com/kyh0703/stock-server/routes/posts/dto"
-	"github.com/kyh0703/stock-server/types"
+	"github.com/kyh0703/stock-server/internal/middleware"
+	"github.com/kyh0703/stock-server/internal/routes/posts/dto"
+	"github.com/kyh0703/stock-server/internal/types"
 )
 
-type postsController struct {
-	path     string
+type PostsController struct {
 	postsSvc postsService
 }
 
-func NewPostController() *postsController {
-	return &postsController{
-		path: "posts",
-	}
+func NewPostController() *PostsController {
+	return &PostsController{}
 }
 
-func (ctrl *postsController) Path() string {
-	return ctrl.path
+func (ctrl *PostsController) Path() string {
+	return "posts"
 }
 
-func (ctrl *postsController) Routes(router fiber.Router) {
+func (ctrl *PostsController) Index(router fiber.Router) {
 	router.Post("/write", middleware.TokenAuth(), ctrl.Write)
 	router.Get("/", ctrl.List)
 	router.Get("/:id", ctrl.GetPostById)
@@ -40,7 +37,7 @@ func (ctrl *postsController) Routes(router fiber.Router) {
 // @Produce     json
 // @Success     200
 // @Router      /posts/write [post]
-func (ctrl *postsController) Write(c *fiber.Ctx) error {
+func (ctrl *PostsController) Write(c *fiber.Ctx) error {
 	req := new(dto.PostsCreateRequest)
 	if err := c.BodyParser(req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
@@ -61,7 +58,7 @@ func (ctrl *postsController) Write(c *fiber.Ctx) error {
 // @Produce     json
 // @Success     200
 // @Router      /posts [get]
-func (ctrl *postsController) List(c *fiber.Ctx) error {
+func (ctrl *PostsController) List(c *fiber.Ctx) error {
 	var (
 		page     = c.Query("page", "1")
 		limit    = c.Query("limit", "10")
@@ -100,7 +97,7 @@ func (ctrl *postsController) List(c *fiber.Ctx) error {
 // @Produce     json
 // @Success     200
 // @Router      /posts/:id [post]
-func (ctrl *postsController) GetPostById(c *fiber.Ctx) error {
+func (ctrl *PostsController) GetPostById(c *fiber.Ctx) error {
 	postId, err := c.ParamsInt("id")
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
@@ -120,7 +117,7 @@ func (ctrl *postsController) GetPostById(c *fiber.Ctx) error {
 // @Produce       json
 // @Success       200
 // @Router        /posts [patch]
-func (ctrl *postsController) UpdatePostById(c *fiber.Ctx) error {
+func (ctrl *PostsController) UpdatePostById(c *fiber.Ctx) error {
 	req := new(dto.PostsUpdateRequest)
 	if err := c.BodyParser(req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
@@ -140,7 +137,7 @@ func (ctrl *postsController) UpdatePostById(c *fiber.Ctx) error {
 // @Produce       json
 // @Success       200
 // @Router        /posts [delete]
-func (ctrl *postsController) RemovePostById(c *fiber.Ctx) error {
+func (ctrl *PostsController) RemovePostById(c *fiber.Ctx) error {
 	req := new(dto.PostsDeleteRequest)
 	if err := c.BodyParser(req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)

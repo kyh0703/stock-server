@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/kyh0703/stock-server/routes/auth"
-	"github.com/kyh0703/stock-server/routes/users/dto"
-	"github.com/kyh0703/stock-server/types"
+	"github.com/kyh0703/stock-server/internal/routes/auth"
+	"github.com/kyh0703/stock-server/internal/routes/users/dto"
+	"github.com/kyh0703/stock-server/internal/types"
 	"golang.org/x/crypto/bcrypt"
 )
 
