@@ -6,16 +6,19 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/kyh0703/stock-server/internal/middleware"
-	"github.com/kyh0703/stock-server/internal/routes/posts/dto"
+	"github.com/kyh0703/stock-server/internal/routes/posts/dtos"
+	postsdto "github.com/kyh0703/stock-server/internal/routes/posts/dtos"
 	"github.com/kyh0703/stock-server/internal/types"
 )
 
 type PostsController struct {
-	postsSvc postsService
+	postsService *PostsService
 }
 
-func NewPostController() *PostsController {
-	return &PostsController{}
+func NewPostController(postsService *PostsService) *PostsController {
+	return &PostsController{
+		postsService: postsService,
+	}
 }
 
 func (ctrl *PostsController) Path() string {
@@ -23,11 +26,11 @@ func (ctrl *PostsController) Path() string {
 }
 
 func (ctrl *PostsController) Index(router fiber.Router) {
-	router.Post("/write", middleware.TokenAuth(), ctrl.Write)
-	router.Get("/", ctrl.List)
-	router.Get("/:id", ctrl.GetPostById)
-	router.Patch("/", middleware.TokenAuth(), ctrl.UpdatePostById)
-	router.Delete("/", middleware.TokenAuth(), ctrl.RemovePostById)
+	router.Post("/write", middleware.TokenAuth(), ctrl.CreatePost)
+	router.Get("/", ctrl.FindAllPost)
+	router.Get("/:id", ctrl.FindPost)
+	router.Patch("/:id", middleware.TokenAuth(), ctrl.UpdatePost)
+	router.Delete("/:id", middleware.TokenAuth(), ctrl.RemovePost)
 }
 
 // Write        godoc
@@ -37,8 +40,8 @@ func (ctrl *PostsController) Index(router fiber.Router) {
 // @Produce     json
 // @Success     200
 // @Router      /posts/write [post]
-func (ctrl *PostsController) Write(c *fiber.Ctx) error {
-	req := new(dto.PostsCreateRequest)
+func (ctrl *PostsController) CreatePost(c *fiber.Ctx) error {
+	req := new(postsdto.CreatePostDto)
 	if err := c.BodyParser(req); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
@@ -48,7 +51,7 @@ func (ctrl *PostsController) Write(c *fiber.Ctx) error {
 	}
 
 	req.UserID = c.Context().UserValue(types.ContextKeyUserID).(int)
-	return ctrl.postsSvc.SavePost(c, req)
+	return ctrl.postsService.Create(c, req)
 }
 
 // List         godoc
@@ -58,7 +61,7 @@ func (ctrl *PostsController) Write(c *fiber.Ctx) error {
 // @Produce     json
 // @Success     200
 // @Router      /posts [get]
-func (ctrl *PostsController) List(c *fiber.Ctx) error {
+func (ctrl *PostsController) FindAllPost(c *fiber.Ctx) error {
 	var (
 		page     = c.Query("page", "1")
 		limit    = c.Query("limit", "10")
@@ -76,7 +79,7 @@ func (ctrl *PostsController) List(c *fiber.Ctx) error {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
-	req := &dto.PostsListRequest{
+	req := &dtos.FindPostsDto{
 		Page:     pageInt,
 		Limit:    limitInt,
 		Tag:      tag,
@@ -87,7 +90,7 @@ func (ctrl *PostsController) List(c *fiber.Ctx) error {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
-	return ctrl.postsSvc.GetPosts(c, req)
+	return ctrl.postsService.GetPosts(c, req)
 }
 
 // GetPostById  godoc
@@ -97,17 +100,13 @@ func (ctrl *PostsController) List(c *fiber.Ctx) error {
 // @Produce     json
 // @Success     200
 // @Router      /posts/:id [post]
-func (ctrl *PostsController) GetPostById(c *fiber.Ctx) error {
-	postId, err := c.ParamsInt("id")
+func (ctrl *PostsController) FindPost(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("id")
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
-	req := &dto.PostsFetchRequest{
-		ID: postId,
-	}
-
-	return ctrl.postsSvc.GetPost(c, req)
+	return ctrl.postsService.FindOne(c, id)
 }
 
 // UpdatePostById godoc
@@ -117,17 +116,22 @@ func (ctrl *PostsController) GetPostById(c *fiber.Ctx) error {
 // @Produce       json
 // @Success       200
 // @Router        /posts [patch]
-func (ctrl *PostsController) UpdatePostById(c *fiber.Ctx) error {
-	req := new(dto.PostsUpdateRequest)
-	if err := c.BodyParser(req); err != nil {
+func (ctrl *PostsController) UpdatePost(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("id")
+	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
-	if err := validator.New().StructCtx(c.Context(), req); err != nil {
+	dto := new(dtos.CreatePostDto)
+	if err := c.BodyParser(dto); err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
-	return ctrl.postsSvc.UpdatePost(c, req)
+	if err := validator.New().StructCtx(c.Context(), dto); err != nil {
+		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
+	}
+
+	return ctrl.postsService.Update(c, id, dto)
 }
 
 // RemovePostById godoc
@@ -137,15 +141,11 @@ func (ctrl *PostsController) UpdatePostById(c *fiber.Ctx) error {
 // @Produce       json
 // @Success       200
 // @Router        /posts [delete]
-func (ctrl *PostsController) RemovePostById(c *fiber.Ctx) error {
-	req := new(dto.PostsDeleteRequest)
-	if err := c.BodyParser(req); err != nil {
+func (ctrl *PostsController) RemovePost(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("id")
+	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
 	}
 
-	if err := validator.New().StructCtx(c.Context(), req); err != nil {
-		return c.App().ErrorHandler(c, types.ErrInvalidParameter)
-	}
-
-	return ctrl.postsSvc.RemovePost(c, req)
+	return ctrl.postsService.RemovePost(c, id)
 }

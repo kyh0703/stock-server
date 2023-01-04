@@ -8,6 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kyh0703/stock-server/configs"
+	"github.com/kyh0703/stock-server/internal/routes/users/dtos"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,33 +19,41 @@ const (
 )
 
 type AuthService struct {
-	authRepo AuthRepository
+	authRepo *AuthRepository
+}
+
+func NewAuthService(authRepo *AuthRepository) *AuthService {
+	return &AuthService{
+		authRepo: authRepo,
+	}
 }
 
 func (svc *AuthService) HashPassword(password string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword(
+	if hash, err := bcrypt.GenerateFromPassword(
 		[]byte(password),
-		bcrypt.DefaultCost)
-	if err != nil {
+		bcrypt.DefaultCost,
+	); err != nil {
 		return "", fmt.Errorf("failed to generate hash: %w", err)
+	} else {
+		return string(hash), nil
 	}
-
-	return string(hash), nil
 }
 
 func (svc *AuthService) CompareHashPassword(hash, password string) (bool, error) {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	if err != nil {
+	if err := bcrypt.CompareHashAndPassword(
+		[]byte(hash),
+		[]byte(password),
+	); err != nil {
 		if err != bcrypt.ErrMismatchedHashAndPassword {
 			return false, fmt.Errorf("mismatch password: %w", err)
 		}
 		return false, err
+	} else {
+		return true, nil
 	}
-
-	return true, nil
 }
 
-func (svc *AuthService) Login(userID int) (*dto.AccessTokenDto, error) {
+func (svc *AuthService) Login(userID int) (*dtos.AccessTokenDto, error) {
 	accessToken, refreshToken, err := svc.generateToken(userID)
 	if err != nil {
 		return nil, err
@@ -63,18 +72,18 @@ func (svc *AuthService) Login(userID int) (*dto.AccessTokenDto, error) {
 	}
 
 	expireTime := time.Unix(expire, 0)
-	err = svc.authRepo.InsertToken(userID, expireTime)
+	err = svc.authRepo.Save(userID, expireTime)
 	if err != nil {
 		return nil, err
 	}
 
-	return &dto.AccessTokenDto{
+	return &dtos.AccessTokenDto{
 		Token:  accessToken,
 		Expire: expireTime,
 	}, nil
 }
 
-func (svc *AuthService) Refresh(refreshToken string) (*dto.AccessTokenDto, error) {
+func (svc *AuthService) Refresh(refreshToken string) (*dtos.AccessTokenDto, error) {
 	claims, err := svc.RefreshTokenData(refreshToken)
 	if err != nil {
 		return nil, err
@@ -87,7 +96,7 @@ func (svc *AuthService) Refresh(refreshToken string) (*dto.AccessTokenDto, error
 		return nil, err
 	}
 
-	userID, err = svc.authRepo.Fetch(int(userID))
+	userID, err = svc.authRepo.FindOne(int(userID))
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +118,7 @@ func (svc *AuthService) Refresh(refreshToken string) (*dto.AccessTokenDto, error
 		return nil, err
 	}
 
-	return &dto.AccessTokenDto{
+	return &dtos.AccessTokenDto{
 		Token:  accessToken,
 		Expire: time.Unix(expire, 0),
 	}, nil

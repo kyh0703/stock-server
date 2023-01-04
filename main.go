@@ -54,7 +54,7 @@ func main() {
 	defer rc.Close()
 
 	// create fiber app
-	app := routes.NewApp()
+	app := routes.SetupApp()
 
 	// initializing the server in goroutine so that
 	// it won't block the graceful shutdown handling below
@@ -80,5 +80,5 @@ func main() {
 		log.Fatal("Server forced to shutdown: ", err)
 	}
 
-	log.Println("Server Exit")
+	log.Println("exit server")
 }

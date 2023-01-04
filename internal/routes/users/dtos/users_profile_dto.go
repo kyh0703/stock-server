@@ -1,4 +1,4 @@
-package dto
+package dtos
 
 type UsersProfileRequest struct {
 	ID int `json:"id" validate:"require"`

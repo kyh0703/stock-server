@@ -9,15 +9,11 @@ import (
 
 type AuthRepository struct{}
 
-func NewAuthRepository() *AuthRepository {
-	return &AuthRepository{}
-}
-
-func (repo *AuthRepository) Fetch(userID int) (int64, error) {
+func (repo *AuthRepository) FindOne(userID int) (int64, error) {
 	return database.Redis.Get(strconv.Itoa(userID)).Int64()
 }
 
-func (repo *AuthRepository) InsertToken(userID int, expire time.Time) error {
+func (repo *AuthRepository) Save(userID int, expire time.Time) error {
 	return database.Redis.Set(
 		strconv.Itoa(userID),
 		userID,
@@ -25,6 +21,6 @@ func (repo *AuthRepository) InsertToken(userID int, expire time.Time) error {
 		Err()
 }
 
-func (repo *AuthRepository) Delete(userID string) (int64, error) {
+func (repo *AuthRepository) Remove(userID string) (int64, error) {
 	return database.Redis.Del(userID).Result()
 }

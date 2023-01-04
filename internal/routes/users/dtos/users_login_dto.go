@@ -1,4 +1,4 @@
-package dto
+package dtos
 
 type UsersLoginRequest struct {
 	Email    string `json:"email" validate:"required"`

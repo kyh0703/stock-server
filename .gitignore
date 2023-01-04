@@ -16,3 +16,4 @@
 # vendor/
 data/
 tmp/
+.vscode/

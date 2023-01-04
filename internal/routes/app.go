@@ -1,9 +1,6 @@
 package routes
 
 import (
-	"fmt"
-
-	swagger "github.com/arsmn/fiber-swagger/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -12,15 +9,18 @@ import (
 	"github.com/kyh0703/stock-server/configs"
 	"github.com/kyh0703/stock-server/internal/middleware"
 	"github.com/kyh0703/stock-server/internal/types"
+
+	swagger "github.com/arsmn/fiber-swagger/v2"
+	_ "github.com/kyh0703/stock-server/internal/routes/posts"
+	_ "github.com/kyh0703/stock-server/internal/routes/users"
 )
 
 var AppModule types.Module
 
 func init() {
-	fmt.Println("hihihihihih print App")
 }
 
-func NewApp() *fiber.App {
+func SetupApp() *fiber.App {
 	// create app
 	app := fiber.New(configs.Fiber(false))
 
@@ -37,9 +37,6 @@ func NewApp() *fiber.App {
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	// set fiber engine
-	AppModule.Engine = app
-
-	// controller
-	AppModule.Init()
+	AppModule.Init(app)
 	return app
 }

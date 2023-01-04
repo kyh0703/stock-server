@@ -18,7 +18,8 @@ type Environment struct {
 	ReadTimeout      time.Duration `env:"READ_TIME_OUT" envDefault:"3s"`
 
 	// Database
-	DBType string `env:"DB_NAME" envDefault:"mysql"`
+	DBType string `env:"DB_TYPE" envDefault:"mysql"`
+	DBName string `env:"DB_NAME" envDefault:"stock"`
 	DBUrl  string `env:"DB_URL" envDefault:"root:1234@tcp(localhost:3306)/stock?parseTime=true"`
 
 	// Cache
@@ -26,7 +27,7 @@ type Environment struct {
 }
 
 func init() {
-	if err := godotenv.Load("./env/.development.env"); err != nil {
+	if err := godotenv.Load("./configs/env/.development.env"); err != nil {
 		log.Println("dose not exist .env file")
 	} else {
 		log.Println("load .env file complete")
@@ -43,7 +44,8 @@ func PrintEnvironment() {
 	log.Println("APP_PORT            = ", Env.Port)
 	log.Println("────────────────────────────────────")
 	log.Println("[DATABASE]")
-	log.Println("DB_NAME             = ", Env.DBType)
+	log.Println("DB_TYPE             = ", Env.DBType)
+	log.Println("DB_NAME             = ", Env.DBName)
 	log.Println("DB_URL              = ", Env.DBUrl)
 	log.Println("────────────────────────────────────")
 	log.Println("[CACHE]")

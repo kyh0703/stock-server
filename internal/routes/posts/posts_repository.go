@@ -23,7 +23,7 @@ func (repo *PostsRepository) Save(ctx context.Context, title, body string, tags 
 		Save(ctx)
 }
 
-func (repo *PostsRepository) UpdateById(ctx context.Context, id int, title, body string, tags []string) (*ent.Posts, error) {
+func (repo *PostsRepository) Update(ctx context.Context, id int, title, body string, tags []string) (*ent.Posts, error) {
 	return database.Ent.Posts.
 		UpdateOneID(id).
 		SetTitle(title).
@@ -32,7 +32,7 @@ func (repo *PostsRepository) UpdateById(ctx context.Context, id int, title, body
 		Save(ctx)
 }
 
-func (repo *PostsRepository) DeleteById(ctx context.Context, id int) error {
+func (repo *PostsRepository) Remove(ctx context.Context, id int) error {
 	return database.Ent.Posts.
 		DeleteOneID(id).
 		Exec(ctx)

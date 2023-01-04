@@ -1,11 +1,7 @@
 package middleware
 
 import (
-	"strings"
-
 	"github.com/gofiber/fiber/v2"
-	"github.com/kyh0703/stock-server/internal/routes/auth"
-	"github.com/kyh0703/stock-server/internal/types"
 )
 
 func SetUserContext() fiber.Handler {
@@ -27,38 +23,38 @@ func SetJson() fiber.Handler {
 
 func TokenAuth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var (
-			tokenString string
-			authService auth.AuthService
-		)
+		// var (
+		// 	tokenString string
+		// 	authService user.AuthService
+		// )
 
-		// Get token string 'Header : Authorization: Bearer ${accessToken}'
-		bearerToken := c.Get("Authorization")
-		if bearerToken == "" {
-			return c.App().ErrorHandler(c, types.ErrUnauthorized)
-		}
-		strArr := strings.Split(bearerToken, " ")
-		if len(strArr) == 2 {
-			tokenString = strArr[1]
-		}
-		if tokenString == "" {
-			return c.App().ErrorHandler(c, types.ErrUnauthorized)
-		}
+		// // Get token string 'Header : Authorization: Bearer ${accessToken}'
+		// bearerToken := c.Get("Authorization")
+		// if bearerToken == "" {
+		// 	return c.App().ErrorHandler(c, types.ErrUnauthorized)
+		// }
+		// strArr := strings.Split(bearerToken, " ")
+		// if len(strArr) == 2 {
+		// 	tokenString = strArr[1]
+		// }
+		// if tokenString == "" {
+		// 	return c.App().ErrorHandler(c, types.ErrUnauthorized)
+		// }
 
-		// Get access token
-		uuid, err := authService.GetUUIDByAccessToken(tokenString)
-		if err != nil {
-			return c.App().ErrorHandler(c, types.ErrUnauthorized)
-		}
+		// // Get access token
+		// uuid, err := authService.GetUUIDByAccessToken(tokenString)
+		// if err != nil {
+		// 	return c.App().ErrorHandler(c, types.ErrUnauthorized)
+		// }
 
-		// Validate in redis token
-		userID, err := authService.FindUserIDByUUID(uuid)
-		if err != nil {
-			return c.App().ErrorHandler(c, types.ErrUnauthorized)
-		}
+		// // Validate in redis token
+		// userID, err := authService.FindUserIDByUUID(uuid)
+		// if err != nil {
+		// 	return c.App().ErrorHandler(c, types.ErrUnauthorized)
+		// }
 
-		c.Context().SetUserValue("userID", userID)
-		c.Context().SetUserValue("accessToken", tokenString)
+		// c.Context().SetUserValue("userID", userID)
+		// c.Context().SetUserValue("accessToken", tokenString)
 		return c.Next()
 	}
 }

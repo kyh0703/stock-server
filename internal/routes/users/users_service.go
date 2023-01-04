@@ -4,18 +4,24 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/kyh0703/stock-server/internal/routes/auth"
-	"github.com/kyh0703/stock-server/internal/routes/users/dto"
+	"github.com/kyh0703/stock-server/internal/routes/users/dtos"
 	"github.com/kyh0703/stock-server/internal/types"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UsersService struct {
-	usersRepo UsersRepository
-	authSvc   auth.AuthService
+	usersRepo   *UsersRepository
+	authService *AuthService
 }
 
-func (svc *UsersService) Register(c *fiber.Ctx, req *dto.UsersRegisterRequest) error {
+func NewUsersService(usersRepo *UsersRepository, authService *AuthService) *UsersService {
+	return &UsersService{
+		usersRepo:   usersRepo,
+		authService: authService,
+	}
+}
+
+func (svc *UsersService) Register(c *fiber.Ctx, req *dtos.UsersRegisterRequest) error {
 	if req.Password != req.PasswordConfirm {
 		return c.App().ErrorHandler(c, types.ErrPasswordNotCompareConfirm)
 	}
@@ -44,7 +50,7 @@ func (svc *UsersService) Register(c *fiber.Ctx, req *dto.UsersRegisterRequest) e
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UsersLoginRequest) error {
+func (svc *UsersService) Login(c *fiber.Ctx, req *dtos.UsersLoginRequest) error {
 	user, err := svc.usersRepo.FetchByEmail(c.Context(), req.Email)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrUserExist)
@@ -55,7 +61,7 @@ func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UsersLoginRequest) error {
 		return c.App().ErrorHandler(c, types.ErrPasswordInvalid)
 	}
 
-	tokenData, err := svc.authSvc.Login(user.ID)
+	tokenData, err := svc.authService.Login(user.ID)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}
@@ -78,7 +84,7 @@ func (svc *UsersService) Login(c *fiber.Ctx, req *dto.UsersLoginRequest) error {
 	cookie.Secure = true
 	c.Cookie(cookie)
 
-	res := &dto.UsersLoginResponse{
+	res := &dtos.UsersLoginResponse{
 		ID:       user.ID,
 		Email:    user.Email,
 		Username: user.Username,
@@ -91,13 +97,13 @@ func (svc *UsersService) Logout(c *fiber.Ctx, token string) error {
 	return c.SendStatus(fiber.StatusNoContent)
 }
 
-func (svc *UsersService) GetUserDetail(c *fiber.Ctx, req *dto.UsersProfileRequest) error {
+func (svc *UsersService) GetUserDetail(c *fiber.Ctx, req *dtos.UsersProfileRequest) error {
 	user, err := svc.usersRepo.FetchOne(c.Context(), req.ID)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrUserNotExist)
 	}
 
-	res := &dto.UsersProfileResponse{
+	res := &dtos.UsersProfileResponse{
 		ID:       user.ID,
 		Email:    user.Email,
 		Username: user.Username,
@@ -106,8 +112,8 @@ func (svc *UsersService) GetUserDetail(c *fiber.Ctx, req *dto.UsersProfileReques
 	return c.JSON(res)
 }
 
-func (svc *UsersService) RefreshToken(c *fiber.Ctx, req *dto.UsersRefreshRequest) error {
-	tokenData, err := svc.authSvc.Refresh(req.RefreshToken)
+func (svc *UsersService) RefreshToken(c *fiber.Ctx, req *dtos.UsersRefreshRequest) error {
+	tokenData, err := svc.authService.Refresh(req.RefreshToken)
 	if err != nil {
 		return c.App().ErrorHandler(c, types.ErrServerInternal)
 	}

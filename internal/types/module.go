@@ -17,6 +17,6 @@ func (m *Module) Init(engine *fiber.App) {
 	for _, controller := range m.controllers {
 		prefix := "/" + controller.Path()
 		router := api.Group(prefix)
-		controller.Routes(router)
+		controller.Index(router)
 	}
 }
