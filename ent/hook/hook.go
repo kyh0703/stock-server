@@ -9,28 +9,28 @@ import (
 	"github.com/kyh0703/stock-server/ent"
 )
 
-// The PostsFunc type is an adapter to allow the use of ordinary
-// function as Posts mutator.
-type PostsFunc func(context.Context, *ent.PostsMutation) (ent.Value, error)
+// The PostFunc type is an adapter to allow the use of ordinary
+// function as Post mutator.
+type PostFunc func(context.Context, *ent.PostMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f PostsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.PostsMutation)
+func (f PostFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.PostMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PostsMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PostMutation", m)
 	}
 	return f(ctx, mv)
 }
 
-// The UsersFunc type is an adapter to allow the use of ordinary
-// function as Users mutator.
-type UsersFunc func(context.Context, *ent.UsersMutation) (ent.Value, error)
+// The UserFunc type is an adapter to allow the use of ordinary
+// function as User mutator.
+type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f UsersFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.UsersMutation)
+func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.UserMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UsersMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
 	}
 	return f(ctx, mv)
 }

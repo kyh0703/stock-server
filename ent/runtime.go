@@ -5,28 +5,28 @@ package ent
 import (
 	"time"
 
-	"github.com/kyh0703/stock-server/ent/posts"
+	"github.com/kyh0703/stock-server/ent/post"
 	"github.com/kyh0703/stock-server/ent/schema"
-	"github.com/kyh0703/stock-server/ent/users"
+	"github.com/kyh0703/stock-server/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	postsFields := schema.Posts{}.Fields()
-	_ = postsFields
-	// postsDescPublishAt is the schema descriptor for publishAt field.
-	postsDescPublishAt := postsFields[3].Descriptor()
-	// posts.DefaultPublishAt holds the default value on creation for the publishAt field.
-	posts.DefaultPublishAt = postsDescPublishAt.Default.(func() time.Time)
-	usersFields := schema.Users{}.Fields()
-	_ = usersFields
-	// usersDescEmail is the schema descriptor for email field.
-	usersDescEmail := usersFields[0].Descriptor()
-	// users.EmailValidator is a validator for the "email" field. It is called by the builders before save.
-	users.EmailValidator = func() func(string) error {
-		validators := usersDescEmail.Validators
+	postFields := schema.Post{}.Fields()
+	_ = postFields
+	// postDescPublishAt is the schema descriptor for publishAt field.
+	postDescPublishAt := postFields[3].Descriptor()
+	// post.DefaultPublishAt holds the default value on creation for the publishAt field.
+	post.DefaultPublishAt = postDescPublishAt.Default.(func() time.Time)
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescEmail is the schema descriptor for email field.
+	userDescEmail := userFields[0].Descriptor()
+	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	user.EmailValidator = func() func(string) error {
+		validators := userDescEmail.Validators
 		fns := [...]func(string) error{
 			validators[0].(func(string) error),
 			validators[1].(func(string) error),
@@ -40,18 +40,18 @@ func init() {
 			return nil
 		}
 	}()
-	// usersDescUsername is the schema descriptor for username field.
-	usersDescUsername := usersFields[1].Descriptor()
-	// users.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
-	users.UsernameValidator = usersDescUsername.Validators[0].(func(string) error)
-	// usersDescCreateAt is the schema descriptor for createAt field.
-	usersDescCreateAt := usersFields[3].Descriptor()
-	// users.DefaultCreateAt holds the default value on creation for the createAt field.
-	users.DefaultCreateAt = usersDescCreateAt.Default.(func() time.Time)
-	// usersDescUpdateAt is the schema descriptor for updateAt field.
-	usersDescUpdateAt := usersFields[4].Descriptor()
-	// users.DefaultUpdateAt holds the default value on creation for the updateAt field.
-	users.DefaultUpdateAt = usersDescUpdateAt.Default.(func() time.Time)
-	// users.UpdateDefaultUpdateAt holds the default value on update for the updateAt field.
-	users.UpdateDefaultUpdateAt = usersDescUpdateAt.UpdateDefault.(func() time.Time)
+	// userDescUsername is the schema descriptor for username field.
+	userDescUsername := userFields[1].Descriptor()
+	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
+	// userDescCreateAt is the schema descriptor for createAt field.
+	userDescCreateAt := userFields[3].Descriptor()
+	// user.DefaultCreateAt holds the default value on creation for the createAt field.
+	user.DefaultCreateAt = userDescCreateAt.Default.(func() time.Time)
+	// userDescUpdateAt is the schema descriptor for updateAt field.
+	userDescUpdateAt := userFields[4].Descriptor()
+	// user.DefaultUpdateAt holds the default value on creation for the updateAt field.
+	user.DefaultUpdateAt = userDescUpdateAt.Default.(func() time.Time)
+	// user.UpdateDefaultUpdateAt holds the default value on update for the updateAt field.
+	user.UpdateDefaultUpdateAt = userDescUpdateAt.UpdateDefault.(func() time.Time)
 }
