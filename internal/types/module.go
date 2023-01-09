@@ -8,7 +8,7 @@ type Module struct {
 	controllers []Controller
 }
 
-func (m *Module) AttachControllers(controllers ...Controller) {
+func (m *Module) AppendControllers(controllers ...Controller) {
 	m.controllers = append(m.controllers, controllers...)
 }
 

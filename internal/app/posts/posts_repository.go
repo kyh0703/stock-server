@@ -13,6 +13,10 @@ import (
 
 type PostsRepository struct{}
 
+func NewPostsRepository() *PostsRepository {
+	return &PostsRepository{}
+}
+
 func (repo *PostsRepository) Save(ctx context.Context, title, body string, tags []string, userID int) (*ent.Post, error) {
 	return database.Ent.Post.
 		Create().
