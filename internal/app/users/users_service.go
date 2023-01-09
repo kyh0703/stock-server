@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/kyh0703/stock-server/internal/routes/users/dtos"
+	"github.com/kyh0703/stock-server/internal/app/users/dtos"
 	"github.com/kyh0703/stock-server/internal/types"
 	"golang.org/x/crypto/bcrypt"
 )

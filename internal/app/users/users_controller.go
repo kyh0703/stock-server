@@ -4,7 +4,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/kyh0703/stock-server/internal/middleware"
-	"github.com/kyh0703/stock-server/internal/routes/users/dtos"
+	"github.com/kyh0703/stock-server/internal/app/users/dtos"
 	"github.com/kyh0703/stock-server/internal/types"
 )
 

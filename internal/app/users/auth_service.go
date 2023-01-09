@@ -8,7 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kyh0703/stock-server/configs"
-	"github.com/kyh0703/stock-server/internal/routes/users/dtos"
+	"github.com/kyh0703/stock-server/internal/app/users/dtos"
 	"golang.org/x/crypto/bcrypt"
 )
 

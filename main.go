@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/kyh0703/stock-server/configs"
-	"github.com/kyh0703/stock-server/internal/routes"
+	"github.com/kyh0703/stock-server/internal/app"
 	"github.com/kyh0703/stock-server/pkg/cache"
 	"github.com/kyh0703/stock-server/pkg/database"
 
@@ -59,12 +59,12 @@ func main() {
 	defer rc.Close()
 
 	// create fiber app
-	app := routes.SetupApp()
+	fiberApp := app.SetupApp()
 
 	// initializing the server in goroutine so that
 	// it won't block the graceful shutdown handling below
 	go func() {
-		err := app.Listen(":" + configs.Env.Port)
+		err := fiberApp.Listen(":" + configs.Env.Port)
 		if err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s\n", err)
 		}
@@ -81,7 +81,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := app.Shutdown(); err != nil {
+	if err := fiberApp.Shutdown(); err != nil {
 		log.Fatal("Server forced to shutdown: ", err)
 	}
 
